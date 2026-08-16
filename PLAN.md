@@ -203,3 +203,16 @@ One idea I got is this, we create three screens, home screen, tasks screen and g
 On home screen we will only have net worth for now, but can add insights and other actionable items. And tasks will keep tasks, and goals will have goals.
 
 This seems nice design choice ( Just like popular application, nothing new ). Let us proceed with this. Later we can also add profile section in that nav var as well.
+
+---
+16 Aug 2026 | 13:36
+
+Resuming this project after a break as I was not able to decide how should I treat Goals and tasks.
+Hence the final conclusion I reached is to satisfy my current needs however possible, and then later look for UI or backend optimzation or refactoring instead trying to know everything beforehand.
+
+Some others things I need to do now are:
+- Rename Tasks to Habit as they are not task but habit that we want to track.
+- Then we will add logic to add goals
+- And I also need a page to add my to-do goals, like "Read Article on Free Will" which is neither habit nor goal.
+- Also since I have all the history, instead of creating a nice UI to show it, let me first just dump the history on some page and later figure out how to present it.
+- And for sure I should start adding apk to my site, so that I can let others test my app without having to build it themselves.
