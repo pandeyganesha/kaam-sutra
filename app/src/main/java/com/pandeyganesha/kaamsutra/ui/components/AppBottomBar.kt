@@ -14,7 +14,7 @@ import androidx.compose.material.icons.filled.Star
 
 
 enum class Screen {
-    HOME, TASKS, GOALS, SETTINGS
+    HOME, HABITS, GOALS, SETTINGS
 }
 
 @Composable
@@ -31,10 +31,10 @@ fun AppBottomBar(
             label = { Text("Home") }
         )
         NavigationBarItem(
-            selected = currentScreen == Screen.TASKS,
-            onClick = {onScreenSelected(Screen.TASKS)},
-            icon = {Icon(Icons.Default.CheckCircle, contentDescription = "Tasks")},
-            label = { Text("Tasks") }
+            selected = currentScreen == Screen.HABITS,
+            onClick = {onScreenSelected(Screen.HABITS)},
+            icon = {Icon(Icons.Default.CheckCircle, contentDescription = "Habits")},
+            label = { Text("Habits") }
         )
         NavigationBarItem(
             selected = false,

@@ -3,8 +3,8 @@ package com.pandeyganesha.kaamsutra.data
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
-@Database(entities = [Task::class, TaskLog::class], version = 5)
+@Database(entities = [Habit::class, HabitLog::class], version = 5)
 abstract class AppDatabase : RoomDatabase() {
-    abstract fun taskLogDao(): TaskLogDao
-    abstract fun taskDao(): TaskDao
+    abstract fun habitLogDao(): HabitLogDao
+    abstract fun habitDao(): HabitDao
 }

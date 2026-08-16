@@ -15,31 +15,31 @@ import androidx.compose.foundation.layout.Column
 
 
 @Composable
-fun AddTaskDialog(
-    taskName: String = "",
+fun AddHabitDialog(
+    habitName: String = "",
     worthDelta: String = "",
-    existingTaskNames: Set<String>,
+    existingHabitNames: Set<String>,
     onDismiss: () -> Unit,
-    onConfirm: (taskName: String, worthDelta: Int) -> Unit,
+    onConfirm: (habitName: String, worthDelta: Int) -> Unit,
 ) {
-    var taskNameText by remember { mutableStateOf(taskName) }
+    var habitNameText by remember { mutableStateOf(habitName) }
     var worthDeltaText by remember { mutableStateOf(worthDelta) }
-    val isDuplicate = taskNameText in existingTaskNames
+    val isDuplicate = habitNameText in existingHabitNames
     val isZero = worthDeltaText.toIntOrNull() == 0
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add Task")},
+        title = { Text("Add Habit")},
         text = {
             Column {
                 OutlinedTextField(
-                    value = taskNameText,
-                    onValueChange = { taskNameText = it },
-                    label = {Text("Task Name")}
+                    value = habitNameText,
+                    onValueChange = { habitNameText = it },
+                    label = {Text("Habit Name")}
                 )
                 if (isDuplicate) {
                     Text(
-                        text = "Task name already exists",
+                        text = "Habit name already exists",
                         color = Color.Red
                     )
                 }
@@ -59,9 +59,9 @@ fun AddTaskDialog(
         confirmButton = {
 
             TextButton(onClick = {
-                onConfirm(taskNameText, worthDeltaText.toIntOrNull() ?: 0)
+                onConfirm(habitNameText, worthDeltaText.toIntOrNull() ?: 0)
             },
-                enabled = !isDuplicate && !isZero && taskNameText.isNotBlank() && worthDeltaText.isNotBlank()
+                enabled = !isDuplicate && !isZero && habitNameText.isNotBlank() && worthDeltaText.isNotBlank()
             ) {
                 Text("Confirm")
             }

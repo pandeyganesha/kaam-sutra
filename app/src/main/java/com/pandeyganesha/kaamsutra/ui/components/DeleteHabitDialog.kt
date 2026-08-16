@@ -6,14 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
 
 @Composable
-fun DeleteTaskDialog(
-    taskName: String,
+fun DeleteHabitDialog(
+    habitName: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ){
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Let '$taskName' from your tasks?") },
+        title = { Text("Let '$habitName' from your habits?") },
         confirmButton = {
 
             TextButton(onClick = { onConfirm()}) {

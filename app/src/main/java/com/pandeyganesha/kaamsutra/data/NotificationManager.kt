@@ -26,17 +26,17 @@ class NotificationWorker(
 
     override suspend fun doWork(): Result {
         val db = DatabaseProvider.getDatabase(applicationContext)
-        val taskDao = db.taskDao()
-        val taskLogDao = db.taskLogDao()
+        val habitDao = db.habitDao()
+        val habitLogDao = db.habitLogDao()
         val today = LocalDate.now().toString()
-        val activeTasks = taskDao.getActiveTasksOnce()
-        val todayLogs = taskLogDao.getLogsForDateOnce(today)
+        val activeHabits = habitDao.getActiveHabitsOnce()
+        val todayLogs = habitLogDao.getLogsForDateOnce(today)
 
-        val undoneTasks = activeTasks.filter { task -> todayLogs.none {it.taskId == task.id && it.pointsAwarded > 0} }
+        val undoneHabits = activeHabits.filter { habit -> todayLogs.none {it.habitId == habit.id && it.pointsAwarded > 0} }
 
-        if (undoneTasks.isNotEmpty()) {
-            val names = undoneTasks.joinToString(", ") { it.name }
-            showNotification("Pending Tasks", names)
+        if (undoneHabits.isNotEmpty()) {
+            val names = undoneHabits.joinToString(", ") { it.name }
+            showNotification("Pending Habits", names)
         }
         return Result.success()
     }
@@ -50,7 +50,7 @@ class NotificationWorker(
         // Create the NotificationChannel if using Android 8.0 (Oreo) or higher
         val channel = NotificationChannel(
             channelId,
-            "Remaining Tasks",
+            "Remaining Habits",
             NotificationManager.IMPORTANCE_DEFAULT
         ).apply {
             description = "Notifications triggered by scheduled background jobs"
@@ -58,7 +58,7 @@ class NotificationWorker(
         notificationManager.createNotificationChannel(channel)
 
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_HABIT or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val pendingIntent = PendingIntent.getActivity(
             applicationContext,
@@ -94,7 +94,7 @@ fun scheduleTestNotification(context: Context) {
         .build()
 
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        "Task Reminder",
+        "Habit Reminder",
         ExistingPeriodicWorkPolicy.KEEP,
         workRequest
     )

@@ -18,25 +18,25 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlin.collections.emptyList
 import androidx.compose.runtime.collectAsState
 import com.pandeyganesha.kaamsutra.data.DatabaseProvider
-import com.pandeyganesha.kaamsutra.data.Task
+import com.pandeyganesha.kaamsutra.data.Habit
 import kotlinx.coroutines.launch
-import com.pandeyganesha.kaamsutra.ui.components.AddTaskDialog
-import com.pandeyganesha.kaamsutra.ui.components.DeleteTaskDialog
+import com.pandeyganesha.kaamsutra.ui.components.AddHabitDialog
+import com.pandeyganesha.kaamsutra.ui.components.DeleteHabitDialog
 import com.pandeyganesha.kaamsutra.ui.components.NetWorthCard
-import com.pandeyganesha.kaamsutra.ui.components.TaskRow
+import com.pandeyganesha.kaamsutra.ui.components.HabitRow
 import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
-import com.pandeyganesha.kaamsutra.data.TaskLog
+import com.pandeyganesha.kaamsutra.data.HabitLog
 import android.Manifest
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
-import com.pandeyganesha.kaamsutra.data.scheduleMissedTaskSettlement
+import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
 import com.pandeyganesha.kaamsutra.ui.components.AppBottomBar
 import com.pandeyganesha.kaamsutra.ui.components.HomeScreen
-import com.pandeyganesha.kaamsutra.ui.components.TasksScreen
+import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
         scheduleTestNotification(applicationContext)
-        scheduleMissedTaskSettlement(applicationContext)
+        scheduleMissedHabitSettlement(applicationContext)
         enableEdgeToEdge()
         setContent {
             KaamSutraTheme {
@@ -67,17 +67,17 @@ fun KaamSutraApp() {
 
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
-    val taskDao = db.taskDao()
-    val taskLogDao = db.taskLogDao()
+    val habitDao = db.habitDao()
+    val habitLogDao = db.habitLogDao()
     val coroutineScope = rememberCoroutineScope()
-    val activeTasks by taskDao.getActiveTasks().collectAsState(initial = emptyList())
-    val existingTaskNames = remember(activeTasks) { activeTasks.map { it.name }.toSet() }
+    val activeHabits by habitDao.getActiveHabits().collectAsState(initial = emptyList())
+    val existingHabitNames = remember(activeHabits) { activeHabits.map { it.name }.toSet() }
     var showDialog by remember { mutableStateOf(false) }
-    var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
-    var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
-    val netWorth by taskLogDao.getNetWorth().collectAsState(initial = 0)
+    var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
+    var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
+    val netWorth by habitLogDao.getNetWorth().collectAsState(initial = 0)
     val today = remember { LocalDate.now().toString() }
-    val allTaskLogsForToday  by taskLogDao.getLogsForDate(today).collectAsState(initial = emptyList())
+    val allHabitLogsForToday  by habitLogDao.getLogsForDate(today).collectAsState(initial = emptyList())
     var currentScreen by remember {mutableStateOf(Screen.HOME)}
 
 
@@ -95,22 +95,22 @@ fun KaamSutraApp() {
                 netWorth = netWorth ?:0,
                 modifier = Modifier.padding(innerPadding)
             )
-            Screen.TASKS -> TasksScreen(
-                activeTasks = activeTasks,
-                allTaskLogsForToday = allTaskLogsForToday,
-                onCheckedChange = { checked, task ->
+            Screen.HABITS -> HabitScreen(
+                activeHabits = activeHabits,
+                allHabitLogsForToday = allHabitLogsForToday,
+                onCheckedChange = { checked, habit ->
                     coroutineScope.launch {
-                        taskLogDao.upsertLog(
-                            TaskLog(
-                                taskId = task.id,
+                        habitLogDao.upsertLog(
+                            HabitLog(
+                                habitId = habit.id,
                                 date = today,
-                                pointsAwarded = if (checked) task.worthDelta else 0
+                                pointsAwarded = if (checked) habit.worthDelta else 0
                             )
                         )
                     }
                 },
-                onEditClicked = { task -> taskBeingEdited = task },
-                onDeleteClicked = { task -> taskBeingDeleted = task},
+                onEditClicked = { habit -> habitBeingEdited = habit },
+                onDeleteClicked = { habit -> habitBeingDeleted = habit},
                 modifier = Modifier.padding(innerPadding)
             )
             Screen.GOALS -> {
@@ -121,42 +121,42 @@ fun KaamSutraApp() {
             }
         }
     }
-    taskBeingDeleted?.let { task ->
-        DeleteTaskDialog(
-            taskName = task.name,
-            onDismiss = { taskBeingDeleted = null },
+    habitBeingDeleted?.let { habit ->
+        DeleteHabitDialog(
+            habitName = habit.name,
+            onDismiss = { habitBeingDeleted = null },
             onConfirm = {
                 coroutineScope.launch {
-                    taskDao.softDeleteTask(task.copy(isActive = false))
-                    taskBeingDeleted = null
+                    habitDao.softDeleteHabit(habit.copy(isActive = false))
+                    habitBeingDeleted = null
                 }
             }
         )
     }
-    taskBeingEdited?.let { task ->
-        AddTaskDialog(
-            taskName = task.name,
-            worthDelta = task.worthDelta.toString(),
-            existingTaskNames = existingTaskNames - task.name,
+    habitBeingEdited?.let { habit ->
+        AddHabitDialog(
+            habitName = habit.name,
+            worthDelta = habit.worthDelta.toString(),
+            existingHabitNames = existingHabitNames - habit.name,
             onDismiss = {
-                taskBeingEdited = null
+                habitBeingEdited = null
             },
-            onConfirm = { taskName, worthDelta ->
+            onConfirm = { habitName, worthDelta ->
                 coroutineScope.launch {
-                    taskDao.updateTask(task.copy(name = taskName, worthDelta = worthDelta))
-                    taskBeingEdited = null
+                    habitDao.updateHabit(habit.copy(name = habitName, worthDelta = worthDelta))
+                    habitBeingEdited = null
                 }
             }
         )
 
     }
     if (showDialog) {
-        AddTaskDialog(
-            existingTaskNames = existingTaskNames,
+        AddHabitDialog(
+            existingHabitNames = existingHabitNames,
             onDismiss = { showDialog = false },
-            onConfirm = { taskName, worthDelta ->
+            onConfirm = { habitName, worthDelta ->
                 coroutineScope.launch {
-                    taskDao.insertTask(Task(name = taskName, worthDelta = worthDelta))
+                    habitDao.insertHabit(Habit(name = habitName, worthDelta = worthDelta))
                 }
                 showDialog = false
             })

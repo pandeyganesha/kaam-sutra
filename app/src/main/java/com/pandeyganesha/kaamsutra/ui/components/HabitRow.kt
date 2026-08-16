@@ -18,8 +18,8 @@ import androidx.compose.material.icons.filled.Edit
 
 
 @Composable
-fun TaskRow(
-    taskName: String,
+fun HabitRow(
+    habitName: String,
     worthDelta: Int,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -43,7 +43,7 @@ fun TaskRow(
                 .weight(1f)
                 .padding(horizontal = 8.dp)
         ) {
-            Text(text = taskName)
+            Text(text = habitName)
             Text(text = "$worthDelta pts")
         }
         IconButton(onClick = onEditClick) {
