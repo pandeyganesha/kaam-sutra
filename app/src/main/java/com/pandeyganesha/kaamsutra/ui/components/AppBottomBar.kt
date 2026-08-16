@@ -9,12 +9,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Star
 
 
-enum class Screen {
-    HOME, HABITS, GOALS, SETTINGS
+enum class Screen(val title: String) {
+    HOME("Home"),
+    HABITS("Habits"),
+    GOALS("Goals"),
+    TODO("To-Do")
 }
 
 @Composable
@@ -49,10 +52,10 @@ fun AppBottomBar(
             label = { Text("Goals") }
         )
         NavigationBarItem(
-            selected = currentScreen == Screen.SETTINGS,
-            onClick = {onScreenSelected(Screen.SETTINGS)},
-            icon = {Icon(Icons.Default.Settings, contentDescription = "Settings")},
-            label = { Text("Settings") }
+            selected = currentScreen == Screen.TODO,
+            onClick = {onScreenSelected(Screen.TODO)},
+            icon = {Icon(Icons.Default.Done, contentDescription = "TODO")},
+            label = { Text("TODO") }
         )
     }
 }

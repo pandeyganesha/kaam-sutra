@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
@@ -22,8 +20,6 @@ import com.pandeyganesha.kaamsutra.data.Habit
 import kotlinx.coroutines.launch
 import com.pandeyganesha.kaamsutra.ui.components.AddHabitDialog
 import com.pandeyganesha.kaamsutra.ui.components.DeleteHabitDialog
-import com.pandeyganesha.kaamsutra.ui.components.NetWorthCard
-import com.pandeyganesha.kaamsutra.ui.components.HabitRow
 import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
@@ -32,9 +28,13 @@ import com.pandeyganesha.kaamsutra.data.HabitLog
 import android.Manifest
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
 import com.pandeyganesha.kaamsutra.ui.components.AppBottomBar
+import com.pandeyganesha.kaamsutra.ui.components.AppTopBar
 import com.pandeyganesha.kaamsutra.ui.components.HomeScreen
 import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
 
@@ -82,6 +82,12 @@ fun KaamSutraApp() {
 
 
     Scaffold(
+        topBar = {
+            AppTopBar(
+                title = currentScreen.title,
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+            )
+        },
         bottomBar = {
             AppBottomBar(
                 currentScreen = currentScreen,
@@ -116,7 +122,7 @@ fun KaamSutraApp() {
             Screen.GOALS -> {
                 // placeholder for now
             }
-            Screen.SETTINGS -> {
+            Screen.TODO -> {
                 // placeholder for now
             }
         }
