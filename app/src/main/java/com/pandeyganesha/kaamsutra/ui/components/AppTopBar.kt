@@ -15,5 +15,6 @@ fun AppTopBar(
     Text(
         text = title,
         modifier=modifier.padding(horizontal = 16.dp),
-        style = MaterialTheme.typography.headlineMedium)
+        style = MaterialTheme.typography.headlineMedium
+    )
 }

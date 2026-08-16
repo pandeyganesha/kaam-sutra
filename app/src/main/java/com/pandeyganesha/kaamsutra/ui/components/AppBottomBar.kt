@@ -40,12 +40,6 @@ fun AppBottomBar(
             label = { Text("Habits") }
         )
         NavigationBarItem(
-            selected = false,
-            onClick = onAddClick,
-            icon = {Icon(Icons.Default.Add, contentDescription = "Add")},
-            label = { Text("Add") }
-        )
-        NavigationBarItem(
             selected = currentScreen == Screen.GOALS,
             onClick = {onScreenSelected(Screen.GOALS)},
             icon = {Icon(Icons.Default.Star, contentDescription = "Goals")},

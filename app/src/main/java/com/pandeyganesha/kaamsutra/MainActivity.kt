@@ -31,12 +31,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.FloatingActionButton
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
 import com.pandeyganesha.kaamsutra.ui.components.AppBottomBar
 import com.pandeyganesha.kaamsutra.ui.components.AppTopBar
 import com.pandeyganesha.kaamsutra.ui.components.HomeScreen
 import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.filled.Add
 
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +86,12 @@ fun KaamSutraApp() {
 
 
     Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {showDialog = true}) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+            }
+        },
         topBar = {
             AppTopBar(
                 title = currentScreen.title,
