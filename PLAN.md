@@ -216,3 +216,29 @@ Some others things I need to do now are:
 - And I also need a page to add my to-do goals, like "Read Article on Free Will" which is neither habit nor goal.
 - Also since I have all the history, instead of creating a nice UI to show it, let me first just dump the history on some page and later figure out how to present it.
 - And for sure I should start adding apk to my site, so that I can let others test my app without having to build it themselves.
+
+---
+17 Aug 2026 | 8:50
+
+I was starting to implement TODO page, but for that I now needed to freeze input output structure, to create table and show Dialog Box on UI.
+I was wondering if I could reuse existing Dialog Boxes just without `worthDelta`. Then i would need to pass var handle this. And also if I could incorporate todo tasks in existing table with `worthDelta=0`  but existing one is called `Habit` and I really like to follow the meaning of the words. So `Habit` should never store `todo` because todo is not habit.
+But both of them share most of the cols, which means I can store them at one place and name it something else like `tracker` ( still haven'e found a good name to encapsulate Goals, todo and habits with one name ).
+The common table will share all of the common ingredients and anything special would have its own table and we would have a foreign key for that in our main table.
+I think I can use `Task` as the common name as now I have not named anything else task and Task kind of encapsulates each idea.
+Habit is a reccuring task.
+ToDo is a task to be done once.
+Goal is also a task to be done once, it just carries different emotion. And since our just not track that emotion, by definition, TODO and Goals can be same. But we would stlil treat them as if they were different.
+Being able to keep them separate is also one of the ideas of this application.
+
+But now I am also reconsidering my idea of `NetWorth`. This net worth idea was to give some dopamine hit to the user. The problem is that it has no significance of itself. So we need to give it some meaning. For example we can assign 1000 worth to a task or 10, it doesn't make a difference. Because the user is itself giving the value. Infinite supply, no demand.
+He doesn't care how much worth he/she has collected.
+To give it meaning, either we will have to control that or user must be well educated to assign nice relative worth to each task and then also aim for getting higher number hence He gets meaning.
+But latter is definitely not a good idea. Humans have always struggled to self regulate, that is why they will be using this app as well.
+But if we assign values to task, then there is still another problem, It would still me meaningless ( in a way ). Some users might like to have higher score, but most would still not care as I does not convert to anything. Doing `workout` everyday converts to his health, but the numbre we are assigning to it has no direct relationship with it.
+
+So Again, either we will have to do a nice study and assign value to a wide range of habits which directly corresponds to something real. But it seems to be very challenging, especially in this initial phase of this app. Or we can have arbitrary worth but standard for different type of tasks so that people can compare each other. And people really like comparing with each other. People do all sorts of things for "Number of Likes". But this is also not an good idea for two reasons.
+1. We don't have so many users to start comparing. We need a nice userbase before we starting seeing effects of this.
+2. This is more important as per my own philosophy that It is not the right way even when we have more users. Because then people start comparing themselves with others without considering all the variables and may also start to optimize for the number instead of his own well being, which is the purpose of this project. We just want to give some kind of psycological reward to the user when he completes something, that's it.
+
+For me, one of such rewards is Github's green graph. I really get that hit everyday when I see another day with green color. So I might proceed with such approaches. It should just feel good to see a graph or some quanity of things in form of some stats, which user can see and feel better that how much progress they have made. This is the better way than to comparing yourself with others.
+Hence I now decide to drop this idea of `worthDelta` and would think of something else later.
