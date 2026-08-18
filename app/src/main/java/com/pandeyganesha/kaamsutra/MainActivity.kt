@@ -41,6 +41,7 @@ import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add
+import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +83,7 @@ fun KaamSutraApp() {
     var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
     val today = remember { LocalDate.now().toString() }
     val allHabitLogsForToday  by taskLogDao.getLogsForDate(today).collectAsState(initial = emptyList())
+    val allGoalLogs by taskLogDao.getAllLogsFor(currentScreen).collectAsState(initial = emptyList())
 
 
     Scaffold(
@@ -129,9 +131,24 @@ fun KaamSutraApp() {
                 onDeleteClicked = { habit -> taskBeingDeleted = habit},
                 modifier = Modifier.padding(innerPadding)
             )
-            Screen.GOALS -> {
-                // placeholder for now
-            }
+            Screen.GOALS -> GoalScreen(
+                activeGoals = activeTasks,
+                allGoalLogs = allGoalLogs,
+                onCheckedChange = { checked, goal ->
+                    coroutineScope.launch {
+                        taskLogDao.upsertLog(
+                            TaskLog(
+                                taskId = goal.id,
+                                date = today,
+                                completed = checked
+                            )
+                        )
+                    }
+                },
+                onEditClicked = { habit -> taskBeingEdited = habit },
+                onDeleteClicked = { habit -> taskBeingDeleted = habit},
+                modifier = Modifier.padding(innerPadding)
+            )
             Screen.TODO -> {
                 // placeholder for now
             }
