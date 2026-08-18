@@ -16,6 +16,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.pandeyganesha.kaamsutra.MainActivity
+import com.pandeyganesha.kaamsutra.ui.components.Screen
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
@@ -26,13 +27,13 @@ class NotificationWorker(
 
     override suspend fun doWork(): Result {
         val db = DatabaseProvider.getDatabase(applicationContext)
-        val habitDao = db.habitDao()
-        val habitLogDao = db.habitLogDao()
+        val taskDao = db.taskDao()
+        val habitLogDao = db.taskLogDao()
         val today = LocalDate.now().toString()
-        val activeHabits = habitDao.getActiveHabitsOnce()
+        val activeHabits = taskDao.getActiveTasksOnce(Screen.HABITS)
         val todayLogs = habitLogDao.getLogsForDateOnce(today)
 
-        val undoneHabits = activeHabits.filter { habit -> todayLogs.none {it.habitId == habit.id && it.pointsAwarded > 0} }
+        val undoneHabits = activeHabits.filter { habit -> todayLogs.none {it.taskId == habit.id } }
 
         if (undoneHabits.isNotEmpty()) {
             val names = undoneHabits.joinToString(", ") { it.name }

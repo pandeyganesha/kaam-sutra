@@ -15,6 +15,7 @@ data class TaskLog(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val taskId: String,
     val date: String,
+    val completed: Boolean
 )
 
 @Dao

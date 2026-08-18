@@ -86,9 +86,11 @@ fun KaamSutraApp() {
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {showDialog = true}) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+            if (currentScreen != Screen.HOME) {
+                FloatingActionButton(
+                    onClick = { showDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
             }
         },
         topBar = {
@@ -118,6 +120,7 @@ fun KaamSutraApp() {
                             TaskLog(
                                 taskId = habit.id,
                                 date = today,
+                                completed = checked
                             )
                         )
                     }

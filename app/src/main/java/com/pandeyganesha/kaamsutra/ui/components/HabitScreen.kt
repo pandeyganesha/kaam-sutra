@@ -20,7 +20,7 @@ fun HabitScreen(activeHabits: List<Task>,
         activeHabits.forEach { habit ->
             TaskRow(
                 taskName = habit.name,
-                isChecked = allHabitLogsForToday.any { it.taskId == habit.id },
+                isChecked = allHabitLogsForToday.any { it.taskId == habit.id && it.completed},
                 onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                 onEditClick = { onEditClicked(habit) },
                 onDeleteClick = { onDeleteClicked(habit) }

@@ -40,4 +40,7 @@ interface TaskDao {
 
     @Query("SELECT * from tasks where isActive = 1 and taskType = :taskType order by createdAt")
     fun getActiveTasks(taskType: Screen): Flow<List<Task>>
+
+    @Query("SELECT * from tasks where isActive = 1 and taskType = :taskType order by createdAt")
+    fun getActiveTasksOnce(taskType: Screen): List<Task>
 }

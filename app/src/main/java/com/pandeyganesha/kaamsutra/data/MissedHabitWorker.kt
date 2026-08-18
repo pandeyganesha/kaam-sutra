@@ -6,6 +6,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import com.pandeyganesha.kaamsutra.ui.components.Screen
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 
@@ -16,24 +17,24 @@ class MissedHabitWorker(
 
     override suspend fun doWork(): Result {
         val db = DatabaseProvider.getDatabase(applicationContext)
-        val habitDao = db.habitDao()
-        val habitLogDao = db.habitLogDao()
+        val taskDao = db.taskDao()
+        val habitLogDao = db.taskLogDao()
 
         val dayJustEnded = LocalDate.now().minusDays(1).toString()
 
-        val activeHabits = habitDao.getActiveHabitsOnce()
+        val activeHabits = taskDao.getActiveTasksOnce(Screen.HABITS)
         val yesterdaysLogs = habitLogDao.getLogsForDateOnce(dayJustEnded)
 
         val missedHabits = activeHabits.filter { habit ->
-            yesterdaysLogs.none { it.habitId == habit.id && it.pointsAwarded > 0 }
+            yesterdaysLogs.none { it.taskId == habit.id }
         }
 
         missedHabits.forEach { habit ->
             habitLogDao.insertLog(
-                HabitLog(
-                    habitId = habit.id,
+                TaskLog(
+                    taskId = habit.id,
                     date = dayJustEnded,
-                    pointsAwarded = -habit.worthDelta
+                    completed = false
                 )
             )
         }
