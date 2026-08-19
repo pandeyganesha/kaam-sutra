@@ -42,6 +42,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add
 import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
+import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -145,13 +146,28 @@ fun KaamSutraApp() {
                         )
                     }
                 },
-                onEditClicked = { habit -> taskBeingEdited = habit },
-                onDeleteClicked = { habit -> taskBeingDeleted = habit},
+                onEditClicked = { goal -> taskBeingEdited = goal },
+                onDeleteClicked = { goal -> taskBeingDeleted = goal},
                 modifier = Modifier.padding(innerPadding)
             )
-            Screen.TODO -> {
-                // placeholder for now
-            }
+            Screen.TODO -> TodoScreen(
+                activeTodos = activeTasks,
+                allTodoLogs = allGoalLogs,
+                onCheckedChange = { checked, todo ->
+                    coroutineScope.launch {
+                        taskLogDao.upsertLog(
+                            TaskLog(
+                                taskId = todo.id,
+                                date = today,
+                                completed = checked
+                            )
+                        )
+                    }
+                },
+                onEditClicked = { todo -> taskBeingEdited = todo },
+                onDeleteClicked = { todo -> taskBeingDeleted = todo},
+                modifier = Modifier.padding(innerPadding)
+            )
         }
     }
     taskBeingDeleted?.let { task ->
