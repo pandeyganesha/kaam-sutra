@@ -242,3 +242,21 @@ So Again, either we will have to do a nice study and assign value to a wide rang
 
 For me, one of such rewards is Github's green graph. I really get that hit everyday when I see another day with green color. So I might proceed with such approaches. It should just feel good to see a graph or some quanity of things in form of some stats, which user can see and feel better that how much progress they have made. This is the better way than to comparing yourself with others.
 Hence I now decide to drop this idea of `worthDelta` and would think of something else later.
+
+---
+20 Aug 2026 | 9:08
+
+We have simplified our logic by treating habits, goals and todo as same kind of things, just different page.
+Although they are not same, but I was facing problems deciding the best way to add those features. Should I have separate tables for each or should I make existing one inclusive enough to include them. But then it becomes cluttered and so on.
+Since I was not sure, I fallback to instinctive mode, which is to implement what I need right now. Whatever solves my problem today is the right solution.
+So I needed To-Do page with no tasks recurrance unlike habits which reset everyday.
+And the easiest way to do so was to incoroporate each of them under same existing tables.
+I will surely create separate tables for them, but only when need, when I add more features like periodic (weekly/monthly/custom) recurrance or something else.
+
+This app is in very basic stage of its working, but it works. Hence before moving to next stage of make each task better, I would want to improve small things here and there. Listing them below:
+
+- Add some versioning system, and release apk on github. ( Need to learn how it works )
+- When we tap on the habits notif, habit page should open.
+- Either remember last page opened and open that when app starts or Always open Habit page for now as there is nothing on Home page.
+- (May be) have a Done section for each task, where we move our done items in collapsed form.
+- Add screen swipe option, where I can swipe to switch adjacent screens instead of always having to click on nav bar.
