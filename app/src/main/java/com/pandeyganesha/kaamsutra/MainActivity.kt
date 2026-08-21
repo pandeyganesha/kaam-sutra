@@ -58,9 +58,15 @@ class MainActivity : ComponentActivity() {
         scheduleTestNotification(applicationContext)
         scheduleMissedHabitSettlement(applicationContext)
         enableEdgeToEdge()
+        val screenToOpen: Screen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getSerializableExtra("notif_screen", Screen::class.java) ?: Screen.HOME
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getSerializableExtra("notif_screen") as? Screen ?: Screen.HOME
+        }
         setContent {
             KaamSutraTheme {
-                KaamSutraApp()
+                KaamSutraApp(screenToOpen)
             }
         }
     }
@@ -69,14 +75,14 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun KaamSutraApp() {
+fun KaamSutraApp(screenToOpen: Screen) {
 
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
     val taskDao = db.taskDao()
     val taskLogDao = db.taskLogDao()
     val coroutineScope = rememberCoroutineScope()
-    var currentScreen by remember {mutableStateOf(Screen.HOME)}
+    var currentScreen by remember { mutableStateOf(screenToOpen) }
     val activeTasks by taskDao.getActiveTasks(currentScreen).collectAsState(initial = emptyList())
     val existingTaskNames = remember(activeTasks) { activeTasks.map { it.name }.toSet() }
     var showDialog by remember { mutableStateOf(false) }
