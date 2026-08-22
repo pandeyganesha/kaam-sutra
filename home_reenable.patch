@@ -1,0 +1,66 @@
+diff --git a/app/src/main/java/com/pandeyganesha/kaamsutra/MainActivity.kt b/app/src/main/java/com/pandeyganesha/kaamsutra/MainActivity.kt
+index 9c21ed0..c7ffe25 100644
+--- a/app/src/main/java/com/pandeyganesha/kaamsutra/MainActivity.kt
++++ b/app/src/main/java/com/pandeyganesha/kaamsutra/MainActivity.kt
+@@ -109,12 +109,13 @@ fun KaamSutraApp(screenToOpen: Screen) {
+     val today = remember { LocalDate.now().toString() }
+     val allHabitLogsForToday  by taskLogDao.getLogsForDate(today).collectAsState(initial = emptyList())
+     val allGoalLogs by taskLogDao.getAllLogsFor(currentScreen).collectAsState(initial = emptyList())
++    val allLogs by taskLogDao.getAllLogs().collectAsState(initial = emptyList())
++    val netWorth = allLogs.filter { it.completed }.sumOf { it.pointsEarned }
+ 
+ 
+     Scaffold(
+         floatingActionButton = {
+-            // replace true with currentScreen != Screen.HOME if needed to enable HOME again
+-            if (true) {
++            if (currentScreen != Screen.HOME) {
+                 FloatingActionButton(
+                     onClick = { showDialog = true }) {
+                     Icon(Icons.Default.Add, contentDescription = "Add")
+@@ -144,9 +145,10 @@ fun KaamSutraApp(screenToOpen: Screen) {
+                 .fillMaxSize()
+         ) { page ->
+         when (Screen.entries[page]) {
+-//            Screen.HOME -> HomeScreen(
+-//                modifier = Modifier.padding(innerPadding)
+-//            )
++            Screen.HOME -> HomeScreen(
++                netWorth = netWorth,
++                modifier = Modifier.padding(innerPadding)
++            )
+ 
+             Screen.HABITS -> HabitScreen(
+                 activeHabits = activeHabits,
+diff --git a/app/src/main/java/com/pandeyganesha/kaamsutra/ui/components/AppBottomBar.kt b/app/src/main/java/com/pandeyganesha/kaamsutra/ui/components/AppBottomBar.kt
+index ea7d749..446ece7 100644
+--- a/app/src/main/java/com/pandeyganesha/kaamsutra/ui/components/AppBottomBar.kt
++++ b/app/src/main/java/com/pandeyganesha/kaamsutra/ui/components/AppBottomBar.kt
+@@ -13,7 +13,7 @@ import androidx.compose.material.icons.filled.Star
+ 
+ 
+ enum class Screen(val title: String) {
+-//    HOME("Home"),
++    HOME("Home"),
+     HABITS("Habits"),
+     GOALS("Goals"),
+     TODO("To-Do")
+@@ -25,12 +25,12 @@ fun AppBottomBar(
+     onScreenSelected: (Screen) -> Unit
+ ){
+     NavigationBar{
+-//        NavigationBarItem(
+-//            selected = currentScreen == Screen.HOME,
+-//            onClick = {onScreenSelected(Screen.HOME)},
+-//            icon = {Icon(Icons.Default.Home, contentDescription = "Home")},
+-//            label = { Text("Home") }
+-//        )
++        NavigationBarItem(
++            selected = currentScreen == Screen.HOME,
++            onClick = {onScreenSelected(Screen.HOME)},
++            icon = {Icon(Icons.Default.Home, contentDescription = "Home")},
++            label = { Text("Home") }
++        )
+         NavigationBarItem(
+             selected = currentScreen == Screen.HABITS,
+             onClick = {onScreenSelected(Screen.HABITS)},

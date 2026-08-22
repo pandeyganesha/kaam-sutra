@@ -27,7 +27,8 @@ data class TaskLog(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val taskId: String,
     val date: String,
-    val completed: Boolean
+    val completed: Boolean,
+    val pointsEarned: Int = 0
 )
 
 @Dao
@@ -38,6 +39,9 @@ interface TaskLogDao {
 
     @Query("SELECT * from task_log where date = :date")
     fun getLogsForDate(date: String): Flow<List<TaskLog>>
+
+    @Query("SELECT * from task_log")
+    fun getAllLogs(): Flow<List<TaskLog>>
 
     @Query("SELECT * FROM task_log WHERE taskId = :taskId AND date = :date LIMIT 1")
     suspend fun getLogForTaskAndDateOnce(taskId: String, date: String): TaskLog?

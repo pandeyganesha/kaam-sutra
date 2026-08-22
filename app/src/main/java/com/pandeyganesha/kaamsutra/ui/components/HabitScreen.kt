@@ -16,10 +16,15 @@ fun HabitScreen(activeHabits: List<Task>,
                 onDeleteClicked: (Task) -> Unit,
                 modifier: Modifier
                 ) {
+    if (activeHabits.isEmpty()) {
+        EmptyState(screen = Screen.HABITS, modifier = modifier)
+        return
+    }
     Column(modifier = modifier.fillMaxSize()) {
         activeHabits.forEach { habit ->
             TaskRow(
                 taskName = habit.name,
+                points = habit.pointsDelta,
                 isChecked = allHabitLogsForToday.any { it.taskId == habit.id && it.completed},
                 onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                 onEditClick = { onEditClicked(habit) },

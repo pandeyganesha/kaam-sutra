@@ -16,10 +16,15 @@ fun GoalScreen(activeGoals: List<Task>,
                 onDeleteClicked: (Task) -> Unit,
                 modifier: Modifier
 ) {
+    if (activeGoals.isEmpty()) {
+        EmptyState(screen = Screen.GOALS, modifier = modifier)
+        return
+    }
     Column(modifier = modifier.fillMaxSize()) {
         activeGoals.forEach { goal ->
             TaskRow(
                 taskName = goal.name,
+                points = goal.pointsDelta,
                 isChecked = allGoalLogs.any { it.taskId == goal.id && it.completed},
                 onCheckedChange = { checked -> onCheckedChange(checked, goal) },
                 onEditClick = { onEditClicked(goal) },

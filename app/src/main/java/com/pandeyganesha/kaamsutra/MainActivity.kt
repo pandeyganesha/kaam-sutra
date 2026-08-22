@@ -109,12 +109,13 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val today = remember { LocalDate.now().toString() }
     val allHabitLogsForToday  by taskLogDao.getLogsForDate(today).collectAsState(initial = emptyList())
     val allGoalLogs by taskLogDao.getAllLogsFor(currentScreen).collectAsState(initial = emptyList())
+    val allLogs by taskLogDao.getAllLogs().collectAsState(initial = emptyList())
+    val netWorth = allLogs.filter { it.completed }.sumOf { it.pointsEarned }
 
 
     Scaffold(
         floatingActionButton = {
-            // replace true with currentScreen != Screen.HOME if needed to enable HOME again
-            if (true) {
+            if (currentScreen != Screen.HOME) {
                 FloatingActionButton(
                     onClick = { showDialog = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
@@ -144,9 +145,10 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 .fillMaxSize()
         ) { page ->
         when (Screen.entries[page]) {
-//            Screen.HOME -> HomeScreen(
-//                modifier = Modifier.padding(innerPadding)
-//            )
+            Screen.HOME -> HomeScreen(
+                netWorth = netWorth,
+                modifier = Modifier.padding(innerPadding)
+            )
 
             Screen.HABITS -> HabitScreen(
                 activeHabits = activeHabits,
@@ -157,7 +159,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
                             TaskLog(
                                 taskId = habit.id,
                                 date = today,
-                                completed = checked
+                                completed = checked,
+                                pointsEarned = if (checked) habit.pointsDelta else 0
                             )
                         )
                     }
@@ -176,7 +179,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
                             TaskLog(
                                 taskId = goal.id,
                                 date = today,
-                                completed = checked
+                                completed = checked,
+                                pointsEarned = if (checked) goal.pointsDelta else 0
                             )
                         )
                     }
@@ -195,7 +199,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
                             TaskLog(
                                 taskId = todo.id,
                                 date = today,
-                                completed = checked
+                                completed = checked,
+                                pointsEarned = if (checked) todo.pointsDelta else 0
                             )
                         )
                     }
@@ -222,14 +227,15 @@ fun KaamSutraApp(screenToOpen: Screen) {
     taskBeingEdited?.let { task ->
         AddTaskDialog(
             taskName = task.name,
+            taskPoints = task.pointsDelta,
             existingTaskNames = existingNames[currentScreen].orEmpty() - task.name,
             currentScreen = currentScreen,
             onDismiss = {
                 taskBeingEdited = null
             },
-            onConfirm = { taskName ->
+            onConfirm = { taskName, points ->
                 coroutineScope.launch {
-                    taskDao.updateTask(task.copy(name = taskName))
+                    taskDao.updateTask(task.copy(name = taskName, pointsDelta = points))
                     taskBeingEdited = null
                 }
             }
@@ -241,9 +247,9 @@ fun KaamSutraApp(screenToOpen: Screen) {
             existingTaskNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = { showDialog = false },
-            onConfirm = { taskName ->
+            onConfirm = { taskName, points ->
                 coroutineScope.launch {
-                    taskDao.insertTask(Task(name = taskName, taskType = currentScreen))
+                    taskDao.insertTask(Task(name = taskName, taskType = currentScreen, pointsDelta = points))
                 }
                 showDialog = false
             })

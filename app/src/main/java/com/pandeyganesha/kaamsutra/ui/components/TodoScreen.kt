@@ -16,10 +16,15 @@ fun TodoScreen(activeTodos: List<Task>,
                onDeleteClicked: (Task) -> Unit,
                modifier: Modifier
 ) {
+    if (activeTodos.isEmpty()) {
+        EmptyState(screen = Screen.TODO, modifier = modifier)
+        return
+    }
     Column(modifier = modifier.fillMaxSize()) {
         activeTodos.forEach { todo ->
             TaskRow(
                 taskName = todo.name,
+                points = todo.pointsDelta,
                 isChecked = allTodoLogs.any { it.taskId == todo.id && it.completed},
                 onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                 onEditClick = { onEditClicked(todo) },

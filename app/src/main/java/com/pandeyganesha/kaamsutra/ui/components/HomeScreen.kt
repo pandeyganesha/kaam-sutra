@@ -6,7 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier){
+fun HomeScreen(netWorth: Int, modifier: Modifier = Modifier){
     Column(modifier = modifier.fillMaxSize()) {
+        NetWorthCard(netWorth = netWorth)
     }
 }

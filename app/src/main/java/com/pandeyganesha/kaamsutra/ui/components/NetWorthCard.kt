@@ -23,8 +23,15 @@ fun NetWorthCard(netWorth: Int, modifier: Modifier = Modifier)
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(text = "Net Worth")
-            Text(text = "$netWorth", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                text = "Net Worth",
+                style = MaterialTheme.typography.labelLarge
+            )
+            Text(
+                text = "\u20B9$netWorth",
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }

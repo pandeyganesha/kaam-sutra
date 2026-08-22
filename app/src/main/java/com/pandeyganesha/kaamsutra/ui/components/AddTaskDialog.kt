@@ -11,19 +11,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 
 
 
 @Composable
 fun AddTaskDialog(
     taskName: String = "",
+    taskPoints: Int = 0,
     existingTaskNames: Set<String>,
     currentScreen: Screen,
     onDismiss: () -> Unit,
-    onConfirm: (taskName: String) -> Unit,
+    onConfirm: (taskName: String, points: Int) -> Unit,
 ) {
     var taskNameText by remember { mutableStateOf(taskName) }
+    var taskPointsText by remember { mutableStateOf(if (taskPoints == 0) "" else taskPoints.toString()) }
     val isDuplicate = taskNameText in existingTaskNames
+    val parsedPoints = taskPointsText.toIntOrNull()
+    val isPointsValid = parsedPoints != null && parsedPoints >= 0
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -41,14 +50,27 @@ fun AddTaskDialog(
                         color = Color.Red
                     )
                 }
+                Spacer(modifier = androidx.compose.ui.Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = taskPointsText,
+                    onValueChange = { taskPointsText = it },
+                    label = { Text("Points") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                if (taskPointsText.isNotBlank() && !isPointsValid) {
+                    Text(
+                        text = "Enter a valid non-negative number",
+                        color = Color.Red
+                    )
+                }
             }
         },
         confirmButton = {
 
             TextButton(onClick = {
-                onConfirm(taskNameText)
+                onConfirm(taskNameText, parsedPoints ?: 0)
             },
-                enabled = !isDuplicate && taskNameText.isNotBlank()
+                enabled = !isDuplicate && taskNameText.isNotBlank() && isPointsValid
             ) {
                 Text("Confirm")
             }

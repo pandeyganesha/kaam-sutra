@@ -15,11 +15,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.graphics.Color
 
 
 @Composable
 fun TaskRow(
     taskName: String,
+    points: Int,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onEditClick: () -> Unit,
@@ -42,8 +46,17 @@ fun TaskRow(
                 .weight(1f)
                 .padding(horizontal = 8.dp)
         ) {
-            Text(text = taskName)
+            Text(
+                text = taskName,
+                textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None,
+                color = if (isChecked) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+            )
         }
+        Text(
+            text = if (isChecked) "+$points" else "$points",
+            color = if (isChecked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.labelLarge
+        )
         IconButton(onClick = onEditClick) {
             Icon(Icons.Default.Edit, contentDescription = "Edit")
         }

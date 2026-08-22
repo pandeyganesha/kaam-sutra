@@ -17,6 +17,7 @@ data class Task(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
     val taskType: Screen,
+    val pointsDelta: Int = 0,
     val createdAt: Long = System.currentTimeMillis(),
     val isActive: Boolean = true
 )
