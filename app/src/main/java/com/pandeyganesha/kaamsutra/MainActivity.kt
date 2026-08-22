@@ -63,10 +63,10 @@ class MainActivity : ComponentActivity() {
         scheduleMissedHabitSettlement(applicationContext)
         enableEdgeToEdge()
         val screenToOpen: Screen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra("notif_screen", Screen::class.java) ?: Screen.HOME
+            intent.getSerializableExtra("notif_screen", Screen::class.java) ?: Screen.HABITS
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra("notif_screen") as? Screen ?: Screen.HOME
+            intent.getSerializableExtra("notif_screen") as? Screen ?: Screen.HABITS
         }
         setContent {
             KaamSutraTheme {
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
 fun KaamSutraApp(screenToOpen: Screen) {
 
     val pagerState = rememberPagerState(
-        initialPage = Screen.HOME.ordinal,
+        initialPage = Screen.HABITS.ordinal,
         pageCount = { Screen.entries.size}
     )
     val scope = rememberCoroutineScope()
@@ -113,7 +113,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
     Scaffold(
         floatingActionButton = {
-            if (currentScreen != Screen.HOME) {
+            // replace true with currentScreen != Screen.HOME if needed to enable HOME again
+            if (true) {
                 FloatingActionButton(
                     onClick = { showDialog = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
@@ -141,12 +142,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
             state = pagerState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
         ) { page ->
         when (Screen.entries[page]) {
-            Screen.HOME -> HomeScreen(
-                modifier = Modifier.padding(innerPadding)
-            )
+//            Screen.HOME -> HomeScreen(
+//                modifier = Modifier.padding(innerPadding)
+//            )
 
             Screen.HABITS -> HabitScreen(
                 activeHabits = activeHabits,
