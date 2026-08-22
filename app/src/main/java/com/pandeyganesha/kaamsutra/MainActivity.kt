@@ -69,8 +69,19 @@ class MainActivity : ComponentActivity() {
             intent.getSerializableExtra("notif_screen") as? Screen ?: Screen.HABITS
         }
         setContent {
-            KaamSutraTheme {
-                KaamSutraApp(screenToOpen)
+            var darkTheme by remember { mutableStateOf(false) }
+
+            KaamSutraTheme(
+                darkTheme = darkTheme,
+                dynamicColor = false
+            ) {
+                KaamSutraApp(
+                    screenToOpen = screenToOpen,
+                    darkTheme = darkTheme,
+                    onThemeToggle = {
+                        darkTheme = !darkTheme
+                    }
+                )
             }
         }
     }
@@ -79,7 +90,11 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun KaamSutraApp(screenToOpen: Screen) {
+fun KaamSutraApp(
+    screenToOpen: Screen,
+    darkTheme: Boolean,
+    onThemeToggle: () -> Unit
+) {
 
     val pagerState = rememberPagerState(
         initialPage = Screen.HABITS.ordinal,
@@ -125,7 +140,9 @@ fun KaamSutraApp(screenToOpen: Screen) {
         topBar = {
             AppTopBar(
                 title = currentScreen.title,
-                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars),
+                darkTheme = darkTheme,
+                onThemeToggle = onThemeToggle
             )
         },
         bottomBar = {
