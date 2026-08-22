@@ -28,9 +28,14 @@ import com.pandeyganesha.kaamsutra.data.TaskLog
 import android.Manifest
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.FloatingActionButton
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
@@ -73,16 +78,22 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun KaamSutraApp(screenToOpen: Screen) {
+
+    val pagerState = rememberPagerState(
+        initialPage = Screen.HOME.ordinal,
+        pageCount = { Screen.entries.size}
+    )
+    val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
     val taskDao = db.taskDao()
     val taskLogDao = db.taskLogDao()
     val coroutineScope = rememberCoroutineScope()
-    var currentScreen by remember { mutableStateOf(screenToOpen) }
+    var currentScreen = Screen.entries[pagerState.currentPage]
     val activeTasks by taskDao.getActiveTasks(currentScreen).collectAsState(initial = emptyList())
     val existingTaskNames = remember(activeTasks) { activeTasks.map { it.name }.toSet() }
     var showDialog by remember { mutableStateOf(false) }
@@ -111,15 +122,25 @@ fun KaamSutraApp(screenToOpen: Screen) {
         bottomBar = {
             AppBottomBar(
                 currentScreen = currentScreen,
-                onScreenSelected = { currentScreen = it },
-                onAddClick = { showDialog = true }
+                onScreenSelected = { scope.launch {
+                    pagerState.animateScrollToPage(
+                        it.ordinal
+                    )
+                }},
             )
         },
     ) { innerPadding ->
-        when (currentScreen) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) { page ->
+        when (Screen.entries[page]) {
             Screen.HOME -> HomeScreen(
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.HABITS -> HabitScreen(
                 activeHabits = activeTasks,
                 allHabitLogsForToday = allHabitLogsForToday,
@@ -135,9 +156,10 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     }
                 },
                 onEditClicked = { habit -> taskBeingEdited = habit },
-                onDeleteClicked = { habit -> taskBeingDeleted = habit},
+                onDeleteClicked = { habit -> taskBeingDeleted = habit },
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.GOALS -> GoalScreen(
                 activeGoals = activeTasks,
                 allGoalLogs = allGoalLogs,
@@ -153,9 +175,10 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     }
                 },
                 onEditClicked = { goal -> taskBeingEdited = goal },
-                onDeleteClicked = { goal -> taskBeingDeleted = goal},
+                onDeleteClicked = { goal -> taskBeingDeleted = goal },
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.TODO -> TodoScreen(
                 activeTodos = activeTasks,
                 allTodoLogs = allGoalLogs,
@@ -171,10 +194,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     }
                 },
                 onEditClicked = { todo -> taskBeingEdited = todo },
-                onDeleteClicked = { todo -> taskBeingDeleted = todo},
+                onDeleteClicked = { todo -> taskBeingDeleted = todo },
                 modifier = Modifier.padding(innerPadding)
             )
         }
+    }
     }
     taskBeingDeleted?.let { task ->
         DeleteTaskDialog(

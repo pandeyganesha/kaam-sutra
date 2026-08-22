@@ -22,8 +22,7 @@ enum class Screen(val title: String) {
 @Composable
 fun AppBottomBar(
     currentScreen: Screen,
-    onScreenSelected: (Screen) -> Unit,
-    onAddClick: () -> Unit
+    onScreenSelected: (Screen) -> Unit
 ){
     NavigationBar{
         NavigationBarItem(
