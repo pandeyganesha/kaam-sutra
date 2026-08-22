@@ -29,7 +29,6 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBars
@@ -93,9 +92,17 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val taskDao = db.taskDao()
     val taskLogDao = db.taskLogDao()
     val coroutineScope = rememberCoroutineScope()
-    var currentScreen = Screen.entries[pagerState.currentPage]
-    val activeTasks by taskDao.getActiveTasks(currentScreen).collectAsState(initial = emptyList())
-    val existingTaskNames = remember(activeTasks) { activeTasks.map { it.name }.toSet() }
+    val currentScreen = Screen.entries[pagerState.currentPage]
+    val activeHabits by taskDao.getActiveTasks(Screen.HABITS).collectAsState(initial = emptyList())
+    val activeGoals by taskDao.getActiveTasks(Screen.GOALS).collectAsState(initial = emptyList())
+    val activeTodos by taskDao.getActiveTasks(Screen.TODO).collectAsState(initial = emptyList())
+    val existingNames = remember(activeHabits, activeGoals, activeTodos) {
+        mapOf(
+            Screen.HABITS to activeHabits.map { it.name }.toSet(),
+            Screen.GOALS to activeGoals.map { it.name }.toSet(),
+            Screen.TODO to activeTodos.map { it.name }.toSet()
+        )
+    }
     var showDialog by remember { mutableStateOf(false) }
     var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
     var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
@@ -142,7 +149,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             )
 
             Screen.HABITS -> HabitScreen(
-                activeHabits = activeTasks,
+                activeHabits = activeHabits,
                 allHabitLogsForToday = allHabitLogsForToday,
                 onCheckedChange = { checked, habit ->
                     coroutineScope.launch {
@@ -161,7 +168,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             )
 
             Screen.GOALS -> GoalScreen(
-                activeGoals = activeTasks,
+                activeGoals = activeGoals,
                 allGoalLogs = allGoalLogs,
                 onCheckedChange = { checked, goal ->
                     coroutineScope.launch {
@@ -180,7 +187,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             )
 
             Screen.TODO -> TodoScreen(
-                activeTodos = activeTasks,
+                activeTodos = activeTodos,
                 allTodoLogs = allGoalLogs,
                 onCheckedChange = { checked, todo ->
                     coroutineScope.launch {
@@ -215,7 +222,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     taskBeingEdited?.let { task ->
         AddTaskDialog(
             taskName = task.name,
-            existingTaskNames = existingTaskNames - task.name,
+            existingTaskNames = existingNames[currentScreen].orEmpty() - task.name,
             currentScreen = currentScreen,
             onDismiss = {
                 taskBeingEdited = null
@@ -231,7 +238,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     }
     if (showDialog) {
         AddTaskDialog(
-            existingTaskNames = existingTaskNames,
+            existingTaskNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = { showDialog = false },
             onConfirm = { taskName ->
