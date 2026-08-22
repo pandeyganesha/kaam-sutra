@@ -6,6 +6,8 @@ import androidx.compose.ui.Modifier
 import com.pandeyganesha.kaamsutra.data.Task
 import com.pandeyganesha.kaamsutra.data.TaskLog
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 
 @Composable
@@ -16,7 +18,7 @@ fun HabitScreen(activeHabits: List<Task>,
                 onDeleteClicked: (Task) -> Unit,
                 modifier: Modifier
                 ) {
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         activeHabits.forEach { habit ->
             TaskRow(
                 taskName = habit.name,
