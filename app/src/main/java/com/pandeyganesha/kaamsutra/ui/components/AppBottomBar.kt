@@ -13,7 +13,7 @@ import androidx.compose.material.icons.filled.Star
 
 
 enum class Screen(val title: String) {
-    HOME("Home"),
+//    HOME("Home"),
     HABITS("Habits"),
     GOALS("Goals"),
     TODO("To-Do")
@@ -22,16 +22,15 @@ enum class Screen(val title: String) {
 @Composable
 fun AppBottomBar(
     currentScreen: Screen,
-    onScreenSelected: (Screen) -> Unit,
-    onAddClick: () -> Unit
+    onScreenSelected: (Screen) -> Unit
 ){
     NavigationBar{
-        NavigationBarItem(
-            selected = currentScreen == Screen.HOME,
-            onClick = {onScreenSelected(Screen.HOME)},
-            icon = {Icon(Icons.Default.Home, contentDescription = "Home")},
-            label = { Text("Home") }
-        )
+//        NavigationBarItem(
+//            selected = currentScreen == Screen.HOME,
+//            onClick = {onScreenSelected(Screen.HOME)},
+//            icon = {Icon(Icons.Default.Home, contentDescription = "Home")},
+//            label = { Text("Home") }
+//        )
         NavigationBarItem(
             selected = currentScreen == Screen.HABITS,
             onClick = {onScreenSelected(Screen.HABITS)},

@@ -260,3 +260,16 @@ This app is in very basic stage of its working, but it works. Hence before movin
 - Either remember last page opened and open that when app starts or Always open Habit page for now as there is nothing on Home page.
 - (May be) have a Done section for each task, where we move our done items in collapsed form.
 - Add screen swipe option, where I can swipe to switch adjacent screens instead of always having to click on nav bar.
+
+---
+22 Aug 2026 | 11:56
+
+Just implemented Swipe screen feature. But I have noticed one issue there.
+Suppose I am on Habits Screen, and I swipe slowly to left, so the right screen of Goals is on the half right side, and Habits is on left half side. But Goals screen is also showing Habits. Why? I suspect, because we update currentScreen var, and when var is updated, we get data from database for that screen only, hence both shows the same.
+
+Solution:
+- May be we can have different tables for each, hence different var for each.
+- Or keep the tables same, and just have different vars
+- Or cache the data for each screen hence they don't change much often
+
+I find the second solution better, because in method one, it is architectural change, and third one should be optimzational change. Second one seems the right choice.

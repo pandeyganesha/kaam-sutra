@@ -28,9 +28,13 @@ import com.pandeyganesha.kaamsutra.data.TaskLog
 import android.Manifest
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.FloatingActionButton
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
@@ -59,10 +63,10 @@ class MainActivity : ComponentActivity() {
         scheduleMissedHabitSettlement(applicationContext)
         enableEdgeToEdge()
         val screenToOpen: Screen = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getSerializableExtra("notif_screen", Screen::class.java) ?: Screen.HOME
+            intent.getSerializableExtra("notif_screen", Screen::class.java) ?: Screen.HABITS
         } else {
             @Suppress("DEPRECATION")
-            intent.getSerializableExtra("notif_screen") as? Screen ?: Screen.HOME
+            intent.getSerializableExtra("notif_screen") as? Screen ?: Screen.HABITS
         }
         setContent {
             KaamSutraTheme {
@@ -73,18 +77,32 @@ class MainActivity : ComponentActivity() {
 }
 
 
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun KaamSutraApp(screenToOpen: Screen) {
+
+    val pagerState = rememberPagerState(
+        initialPage = Screen.HABITS.ordinal,
+        pageCount = { Screen.entries.size}
+    )
+    val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
     val taskDao = db.taskDao()
     val taskLogDao = db.taskLogDao()
     val coroutineScope = rememberCoroutineScope()
-    var currentScreen by remember { mutableStateOf(screenToOpen) }
-    val activeTasks by taskDao.getActiveTasks(currentScreen).collectAsState(initial = emptyList())
-    val existingTaskNames = remember(activeTasks) { activeTasks.map { it.name }.toSet() }
+    val currentScreen = Screen.entries[pagerState.currentPage]
+    val activeHabits by taskDao.getActiveTasks(Screen.HABITS).collectAsState(initial = emptyList())
+    val activeGoals by taskDao.getActiveTasks(Screen.GOALS).collectAsState(initial = emptyList())
+    val activeTodos by taskDao.getActiveTasks(Screen.TODO).collectAsState(initial = emptyList())
+    val existingNames = remember(activeHabits, activeGoals, activeTodos) {
+        mapOf(
+            Screen.HABITS to activeHabits.map { it.name }.toSet(),
+            Screen.GOALS to activeGoals.map { it.name }.toSet(),
+            Screen.TODO to activeTodos.map { it.name }.toSet()
+        )
+    }
     var showDialog by remember { mutableStateOf(false) }
     var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
     var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
@@ -95,7 +113,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
     Scaffold(
         floatingActionButton = {
-            if (currentScreen != Screen.HOME) {
+            // replace true with currentScreen != Screen.HOME if needed to enable HOME again
+            if (true) {
                 FloatingActionButton(
                     onClick = { showDialog = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
@@ -111,17 +130,26 @@ fun KaamSutraApp(screenToOpen: Screen) {
         bottomBar = {
             AppBottomBar(
                 currentScreen = currentScreen,
-                onScreenSelected = { currentScreen = it },
-                onAddClick = { showDialog = true }
+                onScreenSelected = { scope.launch {
+                    pagerState.animateScrollToPage(
+                        it.ordinal
+                    )
+                }},
             )
         },
     ) { innerPadding ->
-        when (currentScreen) {
-            Screen.HOME -> HomeScreen(
-                modifier = Modifier.padding(innerPadding)
-            )
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+        ) { page ->
+        when (Screen.entries[page]) {
+//            Screen.HOME -> HomeScreen(
+//                modifier = Modifier.padding(innerPadding)
+//            )
+
             Screen.HABITS -> HabitScreen(
-                activeHabits = activeTasks,
+                activeHabits = activeHabits,
                 allHabitLogsForToday = allHabitLogsForToday,
                 onCheckedChange = { checked, habit ->
                     coroutineScope.launch {
@@ -135,11 +163,12 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     }
                 },
                 onEditClicked = { habit -> taskBeingEdited = habit },
-                onDeleteClicked = { habit -> taskBeingDeleted = habit},
+                onDeleteClicked = { habit -> taskBeingDeleted = habit },
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.GOALS -> GoalScreen(
-                activeGoals = activeTasks,
+                activeGoals = activeGoals,
                 allGoalLogs = allGoalLogs,
                 onCheckedChange = { checked, goal ->
                     coroutineScope.launch {
@@ -153,11 +182,12 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     }
                 },
                 onEditClicked = { goal -> taskBeingEdited = goal },
-                onDeleteClicked = { goal -> taskBeingDeleted = goal},
+                onDeleteClicked = { goal -> taskBeingDeleted = goal },
                 modifier = Modifier.padding(innerPadding)
             )
+
             Screen.TODO -> TodoScreen(
-                activeTodos = activeTasks,
+                activeTodos = activeTodos,
                 allTodoLogs = allGoalLogs,
                 onCheckedChange = { checked, todo ->
                     coroutineScope.launch {
@@ -171,10 +201,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     }
                 },
                 onEditClicked = { todo -> taskBeingEdited = todo },
-                onDeleteClicked = { todo -> taskBeingDeleted = todo},
+                onDeleteClicked = { todo -> taskBeingDeleted = todo },
                 modifier = Modifier.padding(innerPadding)
             )
         }
+    }
     }
     taskBeingDeleted?.let { task ->
         DeleteTaskDialog(
@@ -191,7 +222,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     taskBeingEdited?.let { task ->
         AddTaskDialog(
             taskName = task.name,
-            existingTaskNames = existingTaskNames - task.name,
+            existingTaskNames = existingNames[currentScreen].orEmpty() - task.name,
             currentScreen = currentScreen,
             onDismiss = {
                 taskBeingEdited = null
@@ -207,7 +238,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     }
     if (showDialog) {
         AddTaskDialog(
-            existingTaskNames = existingTaskNames,
+            existingTaskNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = { showDialog = false },
             onConfirm = { taskName ->
