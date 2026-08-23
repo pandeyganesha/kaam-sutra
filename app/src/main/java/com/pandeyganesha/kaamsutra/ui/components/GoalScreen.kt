@@ -6,8 +6,11 @@ import androidx.compose.ui.Modifier
 import com.pandeyganesha.kaamsutra.data.Task
 import com.pandeyganesha.kaamsutra.data.TaskLog
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.unit.dp
 
 
 @Composable
@@ -28,5 +31,6 @@ fun GoalScreen(activeGoals: List<Task>,
                 onDeleteClick = { onDeleteClicked(goal) }
             )
         }
+        Spacer(modifier = Modifier.height(75.dp))
     }
 }
