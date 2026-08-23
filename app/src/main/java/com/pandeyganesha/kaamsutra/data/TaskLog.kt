@@ -11,7 +11,7 @@ import java.util.UUID
 import androidx.room.OnConflictStrategy
 import androidx.room.Update
 import com.pandeyganesha.kaamsutra.ui.components.Screen
-import java.util.Formattable
+
 
 @Entity(
     tableName = "task_log",
@@ -32,9 +32,6 @@ data class TaskLog(
 
 @Dao
 interface TaskLogDao {
-
-    @Insert
-    suspend fun insertTaskLog(taskLog: TaskLog)
 
     @Query("SELECT * from task_log where date = :date")
     fun getLogsForDate(date: String): Flow<List<TaskLog>>

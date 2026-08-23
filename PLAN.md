@@ -273,3 +273,36 @@ Solution:
 - Or cache the data for each screen hence they don't change much often
 
 I find the second solution better, because in method one, it is architectural change, and third one should be optimzational change. Second one seems the right choice.
+
+---
+23 Aug 2026 | 12:56
+
+I started to implement a feature. Move the checked items to the bottom.
+Idea seems quite simple until it didn't. To surive restart and to know where to put current item, we need to store that info or build a logic.
+A simple logic would be to have two lists, done-notDone lists, and first place the done list and then the not done list.
+
+But I have another requirement that I will implement in future for sure, which is to be able to reorder the tasks.
+And in that case, the logic won't suffice, as I now need to store the position of the items.
+
+There are two ways to do so:
+1.  Absolute position: At first I thought, reflexively, to have a sort_order/priority/position col which stores the index. But it had its own problem. If an items from index 5 moves to 2, then i need to update position for each item in between. And that doesn't sound good. There are other ways that I thought to overcome this problem, but still it didn't feel too good to implement.
+2. Relative position: Hence I thought to use relative positions. Like linked-list ( Finally getting the change to implement it somewhere ( until I realized again that I won't )), each tasks will have a previous and successive node. When we move an item, we update these value for the task and for its affected neighors only.
+
+Second option felt better, and now I need to decide which table holds this info? Task table is meant to reflect the Task itself, not where it is to be rendered on UI. So TaskLog is the only option. But I have been following event sourcing principles ( partially ) to insert logs in here. But now things seems to become culttered again. Who cares when we move an task and how many times and all. These questions are worthless in our application. Also position is an attribute directly related to the Task not TaskLog, but the current definition for Task didn't feel right to include this as well.
+
+So here I am again, with architectural decisions to be taken.
+I first thought for going all in for strict event sourcing and log each event ( from enum ) and then have projection tables to make Read operations faster. But it was also not feeling right. Do I really need to store answer for all the questions that won't be asked?
+
+And now I am reconsidering why did I even start with event sourcing in the first place?
+The answer was history. I felt this paradigm is quite simple ( in logical sense ) to support history. Now I am planning to re-plan it all.
+
+I might try to answer this question. Do I want to track this attribute/event? if yes, go for event sourcing, if no, go for simple CRUD operations. My current database should be able to reflect both of these types. How? I still need to plan that.
+Let me have a table or just a column to implement event sourcing type for only the things that needs tracking. Anything that just needs to show current state and needs no tracking, goes into CRUD operations. Another example is, Name update for a task. I don't care what I named it before, what I named it later. Hence I can make inplace change. ( Although I might treat name update in habits next day as new task. Not sure, just thinking of this edge case, leaving it for now. KISS )
+
+At this point I feel like I should create separate tables for each task type. As for now I have to differentiate for habits from goals and todo. Because one habit is reccuring while goals and todo are not. Also later todo and goals might also diverge.
+
+So let us keep table for Habits, and Goals and Todo. While, for now, Goals and ToDo will share same strucutre. We will start one by one. Let us only creating new tables for TODO, and keep everything else same, instead of breaking whole application.
+
+*UPDATE*: I have decided to use sortOrder to give each task a numerical positions and update all the tasks when a task is moved for two given reasons.
+1. We don't move too many tasks too many times. It is not a heavily used operation.
+1. And even if it becomes much used, we won't have like 10,000 tasks. And sql is fast enough to handle small tasks very fast.

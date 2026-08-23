@@ -45,6 +45,8 @@ import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add
+import com.pandeyganesha.kaamsutra.data.Status
+import com.pandeyganesha.kaamsutra.data.Todo
 import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
 import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
 
@@ -89,13 +91,14 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
+    val todoDao = db.todoDao()
     val taskDao = db.taskDao()
     val taskLogDao = db.taskLogDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
     val activeHabits by taskDao.getActiveTasks(Screen.HABITS).collectAsState(initial = emptyList())
     val activeGoals by taskDao.getActiveTasks(Screen.GOALS).collectAsState(initial = emptyList())
-    val activeTodos by taskDao.getActiveTasks(Screen.TODO).collectAsState(initial = emptyList())
+    val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
     val existingNames = remember(activeHabits, activeGoals, activeTodos) {
         mapOf(
             Screen.HABITS to activeHabits.map { it.name }.toSet(),
@@ -104,6 +107,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
         )
     }
     var showDialog by remember { mutableStateOf(false) }
+    var todoBeingEdited by remember { mutableStateOf<Todo?>(null) }
+    var todoBeingDeleted by remember { mutableStateOf<Todo?>(null) }
     var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
     var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
     val today = remember { LocalDate.now().toString() }
@@ -188,20 +193,13 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
             Screen.TODO -> TodoScreen(
                 activeTodos = activeTodos,
-                allTodoLogs = allGoalLogs,
                 onCheckedChange = { checked, todo ->
                     coroutineScope.launch {
-                        taskLogDao.upsertLog(
-                            TaskLog(
-                                taskId = todo.id,
-                                date = today,
-                                completed = checked
-                            )
-                        )
+                        todoDao.updateTodo(todo.copy(completed = checked))
                     }
                 },
-                onEditClicked = { todo -> taskBeingEdited = todo },
-                onDeleteClicked = { todo -> taskBeingDeleted = todo },
+                onEditClicked = { todo -> todoBeingEdited = todo },
+                onDeleteClicked = { todo -> todoBeingDeleted = todo },
                 modifier = Modifier.padding(innerPadding)
             )
         }
@@ -234,7 +232,34 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 }
             }
         )
-
+    }
+    todoBeingDeleted?.let { todo ->
+        DeleteTaskDialog(
+            taskName = todo.name,
+            onDismiss = { todoBeingDeleted = null },
+            onConfirm = {
+                coroutineScope.launch {
+                    todoDao.softDeleteTodo(todo.id)
+                    todoBeingDeleted = null
+                }
+            }
+        )
+    }
+    todoBeingEdited?.let { todo ->
+        AddTaskDialog(
+            taskName = todo.name,
+            existingTaskNames = existingNames[currentScreen].orEmpty() - todo.name,
+            currentScreen = currentScreen,
+            onDismiss = {
+                todoBeingEdited = null
+            },
+            onConfirm = { todoName ->
+                coroutineScope.launch {
+                    todoDao.updateTodo(todo.copy(name = todoName))
+                    todoBeingEdited = null
+                }
+            }
+        )
     }
     if (showDialog) {
         AddTaskDialog(
@@ -243,7 +268,13 @@ fun KaamSutraApp(screenToOpen: Screen) {
             onDismiss = { showDialog = false },
             onConfirm = { taskName ->
                 coroutineScope.launch {
-                    taskDao.insertTask(Task(name = taskName, taskType = currentScreen))
+                    if (currentScreen == Screen.TODO)
+                    {
+                        todoDao.createTodo(taskName)
+                    }
+                    else {
+                        taskDao.insertTask(Task(name = taskName, taskType = currentScreen))
+                    }
                 }
                 showDialog = false
             })

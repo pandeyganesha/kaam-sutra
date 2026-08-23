@@ -2,9 +2,12 @@ package com.pandeyganesha.kaamsutra.data
 
 import android.content.Context
 import androidx.room.Room
+import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_9_10
 
 object DatabaseProvider {
-    @Volatile private var instance: AppDatabase? = null
+
+    @Volatile
+    private var instance: AppDatabase? = null
 
     fun getDatabase(context: Context): AppDatabase {
         return instance ?: synchronized(this) {
@@ -12,7 +15,10 @@ object DatabaseProvider {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "app_database"
-            ).fallbackToDestructiveMigration(false).build().also { instance = it }
+            )
+                .addMigrations(MIGRATION_9_10)
+                .build()
+                .also { instance = it }
         }
     }
 }

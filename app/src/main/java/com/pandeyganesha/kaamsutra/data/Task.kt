@@ -32,12 +32,6 @@ interface TaskDao {
     @Query("UPDATE tasks SET isActive = 0 WHERE id = :taskId")
     suspend fun softDeleteTask(taskId: String)
 
-    @Query("SELECT * from tasks order by createdAt")
-    fun getTasks(): Flow<List<Task>>
-
-    @Query("Select * from tasks where id = :taskId")
-    fun getTask(taskId: String): Flow<Task?>
-
     @Query("SELECT * from tasks where isActive = 1 and taskType = :taskType order by createdAt")
     fun getActiveTasks(taskType: Screen): Flow<List<Task>>
 
