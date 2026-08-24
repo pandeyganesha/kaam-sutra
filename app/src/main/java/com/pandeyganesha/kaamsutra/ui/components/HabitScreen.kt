@@ -3,8 +3,8 @@ package com.pandeyganesha.kaamsutra.ui.components
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.pandeyganesha.kaamsutra.data.Task
-import com.pandeyganesha.kaamsutra.data.TaskLog
+import com.pandeyganesha.kaamsutra.data.Habit
+import com.pandeyganesha.kaamsutra.data.HabitLog
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -14,18 +14,18 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun HabitScreen(activeHabits: List<Task>,
-                allHabitLogsForToday: List<TaskLog>,
-                onCheckedChange: (Boolean, Task) -> Unit,
-                onEditClicked: (Task) -> Unit,
-                onDeleteClicked: (Task) -> Unit,
+fun HabitScreen(activeHabits: List<Habit>,
+                allHabitLogsForToday: List<HabitLog>,
+                onCheckedChange: (Boolean, Habit) -> Unit,
+                onEditClicked: (Habit) -> Unit,
+                onDeleteClicked: (Habit) -> Unit,
                 modifier: Modifier
                 ) {
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         activeHabits.forEach { habit ->
             TaskRow(
                 taskName = habit.name,
-                isChecked = allHabitLogsForToday.any { it.taskId == habit.id && it.completed},
+                isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed},
                 onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                 onEditClick = { onEditClicked(habit) },
                 onDeleteClick = { onDeleteClicked(habit) }

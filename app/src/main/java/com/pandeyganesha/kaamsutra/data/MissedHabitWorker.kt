@@ -17,23 +17,23 @@ class MissedHabitWorker(
 
     override suspend fun doWork(): Result {
         val db = DatabaseProvider.getDatabase(applicationContext)
-        val taskDao = db.taskDao()
-        val habitLogDao = db.taskLogDao()
+        val habitDao = db.habitDao()
+        val habitLogDao = db.habitLogDao()
 
         val dayJustEnded = LocalDate.now().minusDays(1).toString()
 
-        val activeHabits = taskDao.getActiveTasksOnce(Screen.HABITS)
+        val activeHabits = habitDao.getActiveHabitsOnce()
         val yesterdaysLogs = habitLogDao.getLogsForDateOnce(dayJustEnded)
 
         val missedHabits = activeHabits.filter { habit ->
-            yesterdaysLogs.none { it.taskId == habit.id }
+            yesterdaysLogs.none { it.habitId == habit.id }
         }
 
         missedHabits.forEach { habit ->
             habitLogDao.insertLog(
-                TaskLog(
-                    taskId = habit.id,
-                    date = dayJustEnded,
+                HabitLog(
+                    habitId = habit.id,
+                    habitDate = dayJustEnded,
                     completed = false
                 )
             )
