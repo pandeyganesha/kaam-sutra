@@ -44,7 +44,7 @@ interface GoalDao {
     @Update
     suspend fun updateGoal(goal: Goal)
 
-    @Query("UPDATE goals SET status = 'DELETED' WHERE id = :goalId")
+    @Query("UPDATE goals SET status = 'DELETED', sortOrder = -1  WHERE id = :goalId")
     suspend fun softDeleteGoal(goalId: String)
 
     @Query("SELECT * from goals where status = :status order by updatedAt")

@@ -249,10 +249,39 @@ fun KaamSutraApp(screenToOpen: Screen) {
             onDismiss = {
                 todoBeingEdited = null
             },
-            onConfirm = { todoName ->
+            onConfirm = { goalName ->
                 coroutineScope.launch {
-                    todoDao.updateTodo(todo.copy(name = todoName))
+                    todoDao.updateTodo(todo.copy(name = goalName))
                     todoBeingEdited = null
+                }
+            }
+        )
+    }
+
+    goalBeingDeleted?.let { goal ->
+        DeleteTaskDialog(
+            taskName = goal.name,
+            onDismiss = { goalBeingDeleted = null },
+            onConfirm = {
+                coroutineScope.launch {
+                    goalDao.softDeleteGoal(goal.id)
+                    goalBeingDeleted = null
+                }
+            }
+        )
+    }
+    goalBeingEdited?.let { goal ->
+        AddTaskDialog(
+            taskName = goal.name,
+            existingTaskNames = existingNames[currentScreen].orEmpty() - goal.name,
+            currentScreen = currentScreen,
+            onDismiss = {
+                goalBeingEdited = null
+            },
+            onConfirm = { goalName ->
+                coroutineScope.launch {
+                    goalDao.updateGoal(goal.copy(name = goalName))
+                    goalBeingEdited = null
                 }
             }
         )

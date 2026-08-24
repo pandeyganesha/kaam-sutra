@@ -204,3 +204,27 @@ val MIGRATION_11_12 = object : Migration(11, 12) {
         db.execSQL("DROP TABLE tasks")
     }
 }
+
+val MIGRATION_12_13 = object : Migration(12, 13) {
+
+    override fun migrate(db: SupportSQLiteDatabase) {
+
+        db.execSQL("""
+            UPDATE todos
+            SET sortOrder = -1
+            WHERE status = 'DELETED'
+        """.trimIndent())
+
+        db.execSQL("""
+            UPDATE habits
+            SET sortOrder = -1
+            WHERE status = 'DELETED'
+        """.trimIndent())
+
+        db.execSQL("""
+            UPDATE goals
+            SET sortOrder = -1
+            WHERE status = 'DELETED'
+        """.trimIndent())
+    }
+}
