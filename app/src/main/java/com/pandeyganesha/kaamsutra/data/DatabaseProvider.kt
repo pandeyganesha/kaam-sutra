@@ -3,6 +3,7 @@ package com.pandeyganesha.kaamsutra.data
 import android.content.Context
 import androidx.room.Room
 import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_9_10
+import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_10_11
 
 object DatabaseProvider {
 
@@ -16,7 +17,10 @@ object DatabaseProvider {
                 AppDatabase::class.java,
                 "app_database"
             )
-                .addMigrations(MIGRATION_9_10)
+                .addMigrations(
+                    MIGRATION_9_10,
+                    MIGRATION_10_11
+                )
                 .build()
                 .also { instance = it }
         }

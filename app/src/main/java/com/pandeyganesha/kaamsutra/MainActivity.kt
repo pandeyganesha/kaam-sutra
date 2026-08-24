@@ -45,6 +45,7 @@ import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add
+import com.pandeyganesha.kaamsutra.data.Goal
 import com.pandeyganesha.kaamsutra.data.Status
 import com.pandeyganesha.kaamsutra.data.Todo
 import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
@@ -93,11 +94,12 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val db = DatabaseProvider.getDatabase(context.applicationContext)
     val todoDao = db.todoDao()
     val taskDao = db.taskDao()
+    val goalDao = db.goalDao()
     val taskLogDao = db.taskLogDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
     val activeHabits by taskDao.getActiveTasks(Screen.HABITS).collectAsState(initial = emptyList())
-    val activeGoals by taskDao.getActiveTasks(Screen.GOALS).collectAsState(initial = emptyList())
+    val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
     val existingNames = remember(activeHabits, activeGoals, activeTodos) {
         mapOf(
@@ -109,6 +111,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
     var showDialog by remember { mutableStateOf(false) }
     var todoBeingEdited by remember { mutableStateOf<Todo?>(null) }
     var todoBeingDeleted by remember { mutableStateOf<Todo?>(null) }
+    var goalBeingEdited by remember { mutableStateOf<Goal?>(null) }
+    var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
     var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
     var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
     val today = remember { LocalDate.now().toString() }
@@ -174,20 +178,13 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
             Screen.GOALS -> GoalScreen(
                 activeGoals = activeGoals,
-                allGoalLogs = allGoalLogs,
                 onCheckedChange = { checked, goal ->
                     coroutineScope.launch {
-                        taskLogDao.upsertLog(
-                            TaskLog(
-                                taskId = goal.id,
-                                date = today,
-                                completed = checked
-                            )
-                        )
+                        goalDao.updateGoal(goal.copy(completed = checked))
                     }
                 },
-                onEditClicked = { goal -> taskBeingEdited = goal },
-                onDeleteClicked = { goal -> taskBeingDeleted = goal },
+                onEditClicked = { goal -> goalBeingEdited = goal },
+                onDeleteClicked = { goal -> goalBeingDeleted = goal },
                 modifier = Modifier.padding(innerPadding)
             )
 
@@ -268,12 +265,16 @@ fun KaamSutraApp(screenToOpen: Screen) {
             onDismiss = { showDialog = false },
             onConfirm = { taskName ->
                 coroutineScope.launch {
-                    if (currentScreen == Screen.TODO)
-                    {
-                        todoDao.createTodo(taskName)
-                    }
-                    else {
-                        taskDao.insertTask(Task(name = taskName, taskType = currentScreen))
+                    when (currentScreen) {
+                        Screen.TODO -> {
+                            todoDao.createTodo(taskName)
+                        }
+                        Screen.GOALS -> {
+                            goalDao.createGoal(taskName)
+                        }
+                        else -> {
+                            taskDao.insertTask(Task(name = taskName, taskType = currentScreen))
+                        }
                     }
                 }
                 showDialog = false

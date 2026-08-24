@@ -11,8 +11,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Update
 
 
-@Entity(tableName = "todos")
-data class Todo(
+@Entity(tableName = "goals")
+data class Goal(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
     val sortOrder: Int,
@@ -23,18 +23,18 @@ data class Todo(
 )
 
 @Dao
-interface TodoDao {
+interface GoalDao {
 
-    @Query("SELECT MAX(sortOrder) + 1 FROM todos")
+    @Query("SELECT MAX(sortOrder) + 1 FROM goals")
     suspend fun nextSortOrder(): Int
 
     @Insert
-    suspend fun insert(todo: Todo)
+    suspend fun insert(goal: Goal)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun createTodo(name: String) {
+    suspend fun createGoal(name: String) {
         insert(
-            Todo(
+            Goal(
                 name = name,
                 sortOrder = nextSortOrder()
             )
@@ -42,11 +42,11 @@ interface TodoDao {
     }
 
     @Update
-    suspend fun updateTodo(todo: Todo)
+    suspend fun updateGoal(goal: Goal)
 
-    @Query("UPDATE todos SET status = 'DELETED' WHERE id = :todoId")
-    suspend fun softDeleteTodo(todoId: String)
+    @Query("UPDATE goals SET status = 'DELETED' WHERE id = :goalId")
+    suspend fun softDeleteGoal(goalId: String)
 
-    @Query("SELECT * from todos where status = :status order by updatedAt")
-    fun getTodos(status: Status): Flow<List<Todo>>
+    @Query("SELECT * from goals where status = :status order by updatedAt")
+    fun getGoals(status: Status): Flow<List<Goal>>
 }
