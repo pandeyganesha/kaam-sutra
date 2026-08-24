@@ -16,7 +16,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import kotlin.collections.emptyList
 import androidx.compose.runtime.collectAsState
 import com.pandeyganesha.kaamsutra.data.DatabaseProvider
-import com.pandeyganesha.kaamsutra.data.Task
+import com.pandeyganesha.kaamsutra.data.Habit
 import kotlinx.coroutines.launch
 import com.pandeyganesha.kaamsutra.ui.components.AddTaskDialog
 import com.pandeyganesha.kaamsutra.ui.components.DeleteTaskDialog
@@ -24,7 +24,7 @@ import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
-import com.pandeyganesha.kaamsutra.data.TaskLog
+import com.pandeyganesha.kaamsutra.data.HabitLog
 import android.Manifest
 import android.os.Build
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,6 +45,9 @@ import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add
+import com.pandeyganesha.kaamsutra.data.Goal
+import com.pandeyganesha.kaamsutra.data.Status
+import com.pandeyganesha.kaamsutra.data.Todo
 import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
 import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
 
@@ -89,13 +92,15 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
-    val taskDao = db.taskDao()
-    val taskLogDao = db.taskLogDao()
+    val todoDao = db.todoDao()
+    val habitDao = db.habitDao()
+    val goalDao = db.goalDao()
+    val taskLogDao = db.habitLogDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
-    val activeHabits by taskDao.getActiveTasks(Screen.HABITS).collectAsState(initial = emptyList())
-    val activeGoals by taskDao.getActiveTasks(Screen.GOALS).collectAsState(initial = emptyList())
-    val activeTodos by taskDao.getActiveTasks(Screen.TODO).collectAsState(initial = emptyList())
+    val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
+    val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
+    val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
     val existingNames = remember(activeHabits, activeGoals, activeTodos) {
         mapOf(
             Screen.HABITS to activeHabits.map { it.name }.toSet(),
@@ -104,11 +109,14 @@ fun KaamSutraApp(screenToOpen: Screen) {
         )
     }
     var showDialog by remember { mutableStateOf(false) }
-    var taskBeingEdited by remember { mutableStateOf<Task?>(null) }
-    var taskBeingDeleted by remember { mutableStateOf<Task?>(null) }
+    var todoBeingEdited by remember { mutableStateOf<Todo?>(null) }
+    var todoBeingDeleted by remember { mutableStateOf<Todo?>(null) }
+    var goalBeingEdited by remember { mutableStateOf<Goal?>(null) }
+    var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
+    var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
+    var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
     val today = remember { LocalDate.now().toString() }
-    val allHabitLogsForToday  by taskLogDao.getLogsForDate(today).collectAsState(initial = emptyList())
-    val allGoalLogs by taskLogDao.getAllLogsFor(currentScreen).collectAsState(initial = emptyList())
+    val allHabitLogsForToday  by taskLogDao.getLogsFor(today).collectAsState(initial = emptyList())
 
 
     Scaffold(
@@ -154,87 +162,100 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 onCheckedChange = { checked, habit ->
                     coroutineScope.launch {
                         taskLogDao.upsertLog(
-                            TaskLog(
-                                taskId = habit.id,
-                                date = today,
+                            HabitLog(
+                                habitId = habit.id,
+                                habitDate = today,
                                 completed = checked
                             )
                         )
                     }
                 },
-                onEditClicked = { habit -> taskBeingEdited = habit },
-                onDeleteClicked = { habit -> taskBeingDeleted = habit },
+                onEditClicked = { habit -> habitBeingEdited = habit },
+                onDeleteClicked = { habit -> habitBeingDeleted = habit },
                 modifier = Modifier.padding(innerPadding)
             )
 
             Screen.GOALS -> GoalScreen(
                 activeGoals = activeGoals,
-                allGoalLogs = allGoalLogs,
                 onCheckedChange = { checked, goal ->
                     coroutineScope.launch {
-                        taskLogDao.upsertLog(
-                            TaskLog(
-                                taskId = goal.id,
-                                date = today,
-                                completed = checked
-                            )
-                        )
+                        goalDao.updateGoal(goal.copy(completed = checked))
                     }
                 },
-                onEditClicked = { goal -> taskBeingEdited = goal },
-                onDeleteClicked = { goal -> taskBeingDeleted = goal },
+                onEditClicked = { goal -> goalBeingEdited = goal },
+                onDeleteClicked = { goal -> goalBeingDeleted = goal },
                 modifier = Modifier.padding(innerPadding)
             )
 
             Screen.TODO -> TodoScreen(
                 activeTodos = activeTodos,
-                allTodoLogs = allGoalLogs,
                 onCheckedChange = { checked, todo ->
                     coroutineScope.launch {
-                        taskLogDao.upsertLog(
-                            TaskLog(
-                                taskId = todo.id,
-                                date = today,
-                                completed = checked
-                            )
-                        )
+                        todoDao.updateTodo(todo.copy(completed = checked))
                     }
                 },
-                onEditClicked = { todo -> taskBeingEdited = todo },
-                onDeleteClicked = { todo -> taskBeingDeleted = todo },
+                onEditClicked = { todo -> todoBeingEdited = todo },
+                onDeleteClicked = { todo -> todoBeingDeleted = todo },
                 modifier = Modifier.padding(innerPadding)
             )
         }
     }
     }
-    taskBeingDeleted?.let { task ->
+    habitBeingDeleted?.let { habit ->
         DeleteTaskDialog(
-            taskName = task.name,
-            onDismiss = { taskBeingDeleted = null },
+            taskName = habit.name,
+            onDismiss = { habitBeingDeleted = null },
             onConfirm = {
                 coroutineScope.launch {
-                    taskDao.softDeleteTask(task.id)
-                    taskBeingDeleted = null
+                    habitDao.softDeleteHabit(habit.id)
+                    habitBeingDeleted = null
                 }
             }
         )
     }
-    taskBeingEdited?.let { task ->
+    habitBeingEdited?.let { habit ->
         AddTaskDialog(
-            taskName = task.name,
-            existingTaskNames = existingNames[currentScreen].orEmpty() - task.name,
+            taskName = habit.name,
+            existingTaskNames = existingNames[currentScreen].orEmpty() - habit.name,
             currentScreen = currentScreen,
             onDismiss = {
-                taskBeingEdited = null
+                habitBeingEdited = null
             },
             onConfirm = { taskName ->
                 coroutineScope.launch {
-                    taskDao.updateTask(task.copy(name = taskName))
-                    taskBeingEdited = null
+                    habitDao.updateHabit(habit.copy(name = taskName))
+                    habitBeingEdited = null
                 }
             }
         )
-
+    }
+    todoBeingDeleted?.let { todo ->
+        DeleteTaskDialog(
+            taskName = todo.name,
+            onDismiss = { todoBeingDeleted = null },
+            onConfirm = {
+                coroutineScope.launch {
+                    todoDao.softDeleteTodo(todo.id)
+                    todoBeingDeleted = null
+                }
+            }
+        )
+    }
+    todoBeingEdited?.let { todo ->
+        AddTaskDialog(
+            taskName = todo.name,
+            existingTaskNames = existingNames[currentScreen].orEmpty() - todo.name,
+            currentScreen = currentScreen,
+            onDismiss = {
+                todoBeingEdited = null
+            },
+            onConfirm = { todoName ->
+                coroutineScope.launch {
+                    todoDao.updateTodo(todo.copy(name = todoName))
+                    todoBeingEdited = null
+                }
+            }
+        )
     }
     if (showDialog) {
         AddTaskDialog(
@@ -243,7 +264,17 @@ fun KaamSutraApp(screenToOpen: Screen) {
             onDismiss = { showDialog = false },
             onConfirm = { taskName ->
                 coroutineScope.launch {
-                    taskDao.insertTask(Task(name = taskName, taskType = currentScreen))
+                    when (currentScreen) {
+                        Screen.TODO -> {
+                            todoDao.createTodo(taskName)
+                        }
+                        Screen.GOALS -> {
+                            goalDao.createGoal(taskName)
+                        }
+                        else -> {
+                            habitDao.createHabit(taskName)
+                        }
+                    }
                 }
                 showDialog = false
             })

@@ -27,13 +27,13 @@ class NotificationWorker(
 
     override suspend fun doWork(): Result {
         val db = DatabaseProvider.getDatabase(applicationContext)
-        val taskDao = db.taskDao()
-        val habitLogDao = db.taskLogDao()
+        val habitDao = db.habitDao()
+        val habitLogDao = db.habitLogDao()
         val today = LocalDate.now().toString()
-        val activeHabits = taskDao.getActiveTasksOnce(Screen.HABITS)
+        val activeHabits = habitDao.getActiveHabitsOnce()
         val todayLogs = habitLogDao.getLogsForDateOnce(today)
 
-        val undoneHabits = activeHabits.filter { habit -> todayLogs.none {it.taskId == habit.id } }
+        val undoneHabits = activeHabits.filter { habit -> todayLogs.none {it.habitId == habit.id } }
 
         if (undoneHabits.isNotEmpty()) {
             val names = undoneHabits.joinToString(", ") { it.name }
