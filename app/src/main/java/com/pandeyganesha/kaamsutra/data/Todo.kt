@@ -47,6 +47,6 @@ interface TodoDao {
     @Query("UPDATE todos SET status = 'DELETED', sortOrder = -1 WHERE id = :todoId")
     suspend fun softDeleteTodo(todoId: String)
 
-    @Query("SELECT * from todos where status = :status order by updatedAt")
+    @Query("SELECT * from todos where status = :status order by sortOrder DESC, createdAt DESC")
     fun getTodos(status: Status): Flow<List<Todo>>
 }
