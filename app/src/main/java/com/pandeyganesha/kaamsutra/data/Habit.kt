@@ -45,7 +45,7 @@ interface HabitDao {
     @Query("UPDATE habits SET status = 'DELETED', sortOrder = -1 WHERE id = :habitId")
     suspend fun softDeleteHabit(habitId: String)
 
-    @Query("SELECT * from habits where status = :status order by createdAt")
+    @Query("SELECT * from habits where status = :status order by sortOrder DESC, createdAt DESC")
     fun getHabits(status: Status): Flow<List<Habit>>
 
     @Query("SELECT * from habits where status = 'ACTIVE' order by createdAt")
