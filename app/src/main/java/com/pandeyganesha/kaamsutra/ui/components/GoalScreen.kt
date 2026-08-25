@@ -19,8 +19,18 @@ fun GoalScreen(activeGoals: List<Goal>,
                onDeleteClicked: (Goal) -> Unit,
                modifier: Modifier
 ) {
+    val (goalsDone, goalsNotDone) = activeGoals.partition { it.completed }
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        activeGoals.forEach { goal ->
+        goalsNotDone.forEach { goal ->
+            TaskRow(
+                taskName = goal.name,
+                isChecked = goal.completed,
+                onCheckedChange = { checked -> onCheckedChange(checked, goal) },
+                onEditClick = { onEditClicked(goal) },
+                onDeleteClick = { onDeleteClicked(goal) }
+            )
+        }
+        goalsDone.forEach { goal ->
             TaskRow(
                 taskName = goal.name,
                 isChecked = goal.completed,

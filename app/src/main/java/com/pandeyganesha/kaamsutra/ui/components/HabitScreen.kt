@@ -21,8 +21,30 @@ fun HabitScreen(activeHabits: List<Habit>,
                 onDeleteClicked: (Habit) -> Unit,
                 modifier: Modifier
                 ) {
+
+    val doneHabits = activeHabits.filter { habit ->
+        allHabitLogsForToday.any { log ->
+            log.habitId == habit.id && log.completed
+        }
+    }
+
+    val notDoneHabits = activeHabits.filter { habit ->
+        allHabitLogsForToday.none { log ->
+            log.habitId == habit.id && log.completed
+        }
+    }
+
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        activeHabits.forEach { habit ->
+        notDoneHabits.forEach { habit ->
+            TaskRow(
+                taskName = habit.name,
+                isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed},
+                onCheckedChange = { checked -> onCheckedChange(checked, habit) },
+                onEditClick = { onEditClicked(habit) },
+                onDeleteClick = { onDeleteClicked(habit) }
+            )
+        }
+        doneHabits.forEach { habit ->
             TaskRow(
                 taskName = habit.name,
                 isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed},
