@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
@@ -19,8 +20,10 @@ fun TodoScreen(activeTodos: List<Todo>,
                onDeleteClicked: (Todo) -> Unit,
                modifier: Modifier
 ) {
+    val (todosDone, todosNotDone) = activeTodos.partition { it.completed }
+
     Column(modifier = modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-        activeTodos.forEach { todo ->
+        todosNotDone.forEach { todo ->
             TaskRow(
                 taskName = todo.name,
                 isChecked = todo.completed,
@@ -29,6 +32,16 @@ fun TodoScreen(activeTodos: List<Todo>,
                 onDeleteClick = { onDeleteClicked(todo) }
             )
         }
-        Spacer(modifier = Modifier.height(75.dp))
+        todosDone.forEach { todo ->
+            TaskRow(
+                taskName = todo.name,
+                isChecked = todo.completed,
+                onCheckedChange = { checked -> onCheckedChange(checked, todo) },
+                onEditClick = { onEditClicked(todo) },
+                onDeleteClick = { onDeleteClicked(todo) }
+            )
+        }
+
+    Spacer(modifier = Modifier.height(75.dp))
     }
 }
