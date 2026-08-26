@@ -172,6 +172,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 },
                 onEditClicked = { habit -> habitBeingEdited = habit },
                 onDeleteClicked = { habit -> habitBeingDeleted = habit },
+                onSortOrderUpdate = { reorderedList ->
+                    scope.launch {
+                        db.habitDao().updateHabits(reorderedList)
+                    }
+                },
                 modifier = Modifier.padding(innerPadding)
             )
 

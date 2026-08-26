@@ -42,6 +42,10 @@ interface HabitDao {
     @Update
     suspend fun updateHabit(habit: Habit)
 
+
+    @Update
+    suspend fun updateHabits(habits: List<Habit>)
+
     @Query("UPDATE habits SET status = 'DELETED', sortOrder = -1 WHERE id = :habitId")
     suspend fun softDeleteHabit(habitId: String)
 
