@@ -64,23 +64,30 @@ fun GoalScreen(activeGoals: List<Goal>,
                 )
             }
         }
-        item {
-            Text(
-                "Done",
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp, bottom = 8.dp)
-            )
-        }
-        items(goalsDone, key = {it.id}) { goal ->
-            TaskRow(
-                taskName = goal.name,
-                isChecked = goal.completed,
-                onCheckedChange = { checked -> onCheckedChange(checked, goal) },
-                onEditClick = { onEditClicked(goal) },
-                onDeleteClick = { onDeleteClicked(goal) }
-            )
-        }
-        item {
-            Spacer(modifier = Modifier.height(75.dp))
+        if (goalsDone.isNotEmpty()) {
+            item {
+                Text(
+                    "Done",
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 28.dp,
+                        bottom = 8.dp
+                    )
+                )
+            }
+            items(goalsDone, key = { it.id }) { goal ->
+                TaskRow(
+                    taskName = goal.name,
+                    isChecked = goal.completed,
+                    onCheckedChange = { checked -> onCheckedChange(checked, goal) },
+                    onEditClick = { onEditClicked(goal) },
+                    onDeleteClick = { onDeleteClicked(goal) }
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(75.dp))
+            }
         }
     }
 }

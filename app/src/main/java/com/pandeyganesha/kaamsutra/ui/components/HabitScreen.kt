@@ -68,23 +68,30 @@ fun HabitScreen(activeHabits: List<Habit>,
             )
             }
         }
-        item {
-            Text(
-                "Done",
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp, bottom = 8.dp)
-            )
-        }
-        items(habitsDone, key = {it.id}){ habit ->
-            TaskRow(
-                taskName = habit.name,
-                isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed},
-                onCheckedChange = { checked -> onCheckedChange(checked, habit) },
-                onEditClick = { onEditClicked(habit) },
-                onDeleteClick = { onDeleteClicked(habit) }
-            )
-        }
-        item {
-            Spacer(modifier = Modifier.height(75.dp))
+        if (habitsDone.isNotEmpty()) {
+            item {
+                Text(
+                    "Done",
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 28.dp,
+                        bottom = 8.dp
+                    )
+                )
+            }
+            items(habitsDone, key = { it.id }) { habit ->
+                TaskRow(
+                    taskName = habit.name,
+                    isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
+                    onCheckedChange = { checked -> onCheckedChange(checked, habit) },
+                    onEditClick = { onEditClicked(habit) },
+                    onDeleteClick = { onDeleteClicked(habit) }
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(75.dp))
+            }
         }
     }
 }

@@ -41,7 +41,7 @@ fun TodoScreen(activeTodos: List<Todo>,
         }
     }
     LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
-        items(todosNotDone, key = {it.id} ) { todo ->
+        items(todosNotDone, key = { it.id }) { todo ->
             ReorderableItem(reorderableState, key = todo.id) { isDragging ->
                 TaskRow(
                     taskName = todo.name,
@@ -62,23 +62,30 @@ fun TodoScreen(activeTodos: List<Todo>,
                 )
             }
         }
-        item {
-            Text(
-                "Done",
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp, bottom = 8.dp)
-            )
-        }
-        items(todosDone, key = {it.id}) { todo ->
-            TaskRow(
-                taskName = todo.name,
-                isChecked = todo.completed,
-                onCheckedChange = { checked -> onCheckedChange(checked, todo) },
-                onEditClick = { onEditClicked(todo) },
-                onDeleteClick = { onDeleteClicked(todo) }
-            )
-        }
-        item {
-            Spacer(modifier = Modifier.height(75.dp))
+        if (todosDone.isNotEmpty()) {
+            item {
+                Text(
+                    "Done",
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 28.dp,
+                        bottom = 8.dp
+                    )
+                )
+            }
+            items(todosDone, key = { it.id }) { todo ->
+                TaskRow(
+                    taskName = todo.name,
+                    isChecked = todo.completed,
+                    onCheckedChange = { checked -> onCheckedChange(checked, todo) },
+                    onEditClick = { onEditClicked(todo) },
+                    onDeleteClick = { onDeleteClicked(todo) }
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.height(75.dp))
+            }
         }
     }
 }
