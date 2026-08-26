@@ -196,6 +196,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 },
                 onEditClicked = { todo -> todoBeingEdited = todo },
                 onDeleteClicked = { todo -> todoBeingDeleted = todo },
+                onSortOrderUpdate = { reorderedList ->
+                    scope.launch {
+                        db.todoDao().updateTodos(reorderedList)
+                    }
+                                    },
                 modifier = Modifier.padding(innerPadding)
             )
         }

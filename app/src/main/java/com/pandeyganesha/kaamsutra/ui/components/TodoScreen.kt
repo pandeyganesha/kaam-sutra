@@ -16,15 +16,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import sh.calvin.reorderable.ReorderableItem
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
 
 @Composable
 fun TodoScreen(activeTodos: List<Todo>,
                onCheckedChange: (Boolean, Todo) -> Unit,
                onEditClicked: (Todo) -> Unit,
                onDeleteClicked: (Todo) -> Unit,
+               onSortOrderUpdate: (List<Todo>) -> Unit,
                modifier: Modifier
 ) {
     val lazyListState = rememberLazyListState()
+
     var todosNotDone by remember(activeTodos) {
         mutableStateOf(activeTodos.filter { !it.completed })
     }
@@ -35,7 +40,6 @@ fun TodoScreen(activeTodos: List<Todo>,
             add(to.index, removeAt(from.index))
         }
     }
-
     LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
         items(todosNotDone, key = {it.id} ) { todo ->
             ReorderableItem(reorderableState, key = todo.id) { isDragging ->
@@ -45,9 +49,24 @@ fun TodoScreen(activeTodos: List<Todo>,
                     onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                     onEditClick = { onEditClicked(todo) },
                     onDeleteClick = { onDeleteClicked(todo) },
-                    modifier = Modifier.longPressDraggableHandle()
+                    modifier = Modifier.longPressDraggableHandle(
+                        onDragStopped = {
+                            val size = todosNotDone.size
+                            val reordered = todosNotDone.mapIndexed { index, t ->
+                                t.copy(sortOrder = size - 1 - index)
+                            }
+                            todosNotDone = reordered
+                            onSortOrderUpdate(reordered)
+                        }
+                    )
                 )
             }
+        }
+        item {
+            Text(
+                "Done",
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 28.dp, bottom = 8.dp)
+            )
         }
         items(todosDone, key = {it.id}) { todo ->
             TaskRow(

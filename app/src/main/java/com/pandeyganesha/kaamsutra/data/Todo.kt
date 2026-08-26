@@ -44,6 +44,9 @@ interface TodoDao {
     @Update
     suspend fun updateTodo(todo: Todo)
 
+    @Update
+    suspend fun updateTodos(todos: List<Todo>)
+
     @Query("UPDATE todos SET status = 'DELETED', sortOrder = -1 WHERE id = :todoId")
     suspend fun softDeleteTodo(todoId: String)
 
