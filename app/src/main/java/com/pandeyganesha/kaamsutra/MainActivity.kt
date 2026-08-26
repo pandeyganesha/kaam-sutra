@@ -50,6 +50,7 @@ import com.pandeyganesha.kaamsutra.data.Status
 import com.pandeyganesha.kaamsutra.data.Todo
 import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
 import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
+import com.pandeyganesha.kaamsutra.ui.components.EmptyState
 
 
 class MainActivity : ComponentActivity() {
@@ -101,6 +102,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
+    val isEmptyMap = mapOf(
+        Screen.HABITS to activeHabits.isEmpty(),
+        Screen.GOALS to activeGoals.isEmpty(),
+        Screen.TODO to activeTodos.isEmpty()
+    )
     val existingNames = remember(activeHabits, activeGoals, activeTodos) {
         mapOf(
             Screen.HABITS to activeHabits.map { it.name }.toSet(),
@@ -151,69 +157,74 @@ fun KaamSutraApp(screenToOpen: Screen) {
             modifier = Modifier
                 .fillMaxSize()
         ) { page ->
-        when (Screen.entries[page]) {
+            if (isEmptyMap[currentScreen] ?: false) {
+                EmptyState(pageName = currentScreen, onClick = { showDialog = true })
+            }
+            else {
+                when (Screen.entries[page]) {
 //            Screen.HOME -> HomeScreen(
 //                modifier = Modifier.padding(innerPadding)
 //            )
 
-            Screen.HABITS -> HabitScreen(
-                activeHabits = activeHabits,
-                allHabitLogsForToday = allHabitLogsForToday,
-                onCheckedChange = { checked, habit ->
-                    coroutineScope.launch {
-                        taskLogDao.upsertLog(
-                            HabitLog(
-                                habitId = habit.id,
-                                habitDate = today,
-                                completed = checked
-                            )
-                        )
-                    }
-                },
-                onEditClicked = { habit -> habitBeingEdited = habit },
-                onDeleteClicked = { habit -> habitBeingDeleted = habit },
-                onSortOrderUpdate = { reorderedList ->
-                    scope.launch {
-                        db.habitDao().updateHabits(reorderedList)
-                    }
-                },
-                modifier = Modifier.padding(innerPadding)
-            )
+                    Screen.HABITS -> HabitScreen(
+                        activeHabits = activeHabits,
+                        allHabitLogsForToday = allHabitLogsForToday,
+                        onCheckedChange = { checked, habit ->
+                            coroutineScope.launch {
+                                taskLogDao.upsertLog(
+                                    HabitLog(
+                                        habitId = habit.id,
+                                        habitDate = today,
+                                        completed = checked
+                                    )
+                                )
+                            }
+                        },
+                        onEditClicked = { habit -> habitBeingEdited = habit },
+                        onDeleteClicked = { habit -> habitBeingDeleted = habit },
+                        onSortOrderUpdate = { reorderedList ->
+                            scope.launch {
+                                db.habitDao().updateHabits(reorderedList)
+                            }
+                        },
+                        modifier = Modifier.padding(innerPadding)
+                    )
 
-            Screen.GOALS -> GoalScreen(
-                activeGoals = activeGoals,
-                onCheckedChange = { checked, goal ->
-                    coroutineScope.launch {
-                        goalDao.updateGoal(goal.copy(completed = checked))
-                    }
-                },
-                onEditClicked = { goal -> goalBeingEdited = goal },
-                onDeleteClicked = { goal -> goalBeingDeleted = goal },
-                onSortOrderUpdate = { reorderedList ->
-                    scope.launch {
-                        db.goalDao().updateGoals(reorderedList)
-                    }
-                },
-                modifier = Modifier.padding(innerPadding)
-            )
+                    Screen.GOALS -> GoalScreen(
+                        activeGoals = activeGoals,
+                        onCheckedChange = { checked, goal ->
+                            coroutineScope.launch {
+                                goalDao.updateGoal(goal.copy(completed = checked))
+                            }
+                        },
+                        onEditClicked = { goal -> goalBeingEdited = goal },
+                        onDeleteClicked = { goal -> goalBeingDeleted = goal },
+                        onSortOrderUpdate = { reorderedList ->
+                            scope.launch {
+                                db.goalDao().updateGoals(reorderedList)
+                            }
+                        },
+                        modifier = Modifier.padding(innerPadding)
+                    )
 
-            Screen.TODO -> TodoScreen(
-                activeTodos = activeTodos,
-                onCheckedChange = { checked, todo ->
-                    coroutineScope.launch {
-                        todoDao.updateTodo(todo.copy(completed = checked))
-                    }
-                },
-                onEditClicked = { todo -> todoBeingEdited = todo },
-                onDeleteClicked = { todo -> todoBeingDeleted = todo },
-                onSortOrderUpdate = { reorderedList ->
-                    scope.launch {
-                        db.todoDao().updateTodos(reorderedList)
-                    }
-                                    },
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
+                    Screen.TODO -> TodoScreen(
+                        activeTodos = activeTodos,
+                        onCheckedChange = { checked, todo ->
+                            coroutineScope.launch {
+                                todoDao.updateTodo(todo.copy(completed = checked))
+                            }
+                        },
+                        onEditClicked = { todo -> todoBeingEdited = todo },
+                        onDeleteClicked = { todo -> todoBeingDeleted = todo },
+                        onSortOrderUpdate = { reorderedList ->
+                            scope.launch {
+                                db.todoDao().updateTodos(reorderedList)
+                            }
+                        },
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                }
+            }
     }
     }
     habitBeingDeleted?.let { habit ->
