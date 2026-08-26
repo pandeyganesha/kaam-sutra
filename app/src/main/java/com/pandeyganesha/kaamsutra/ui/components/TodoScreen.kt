@@ -18,7 +18,7 @@ import androidx.compose.runtime.remember
 import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.runtime.rememberCoroutineScope
+
 
 @Composable
 fun TodoScreen(activeTodos: List<Todo>,

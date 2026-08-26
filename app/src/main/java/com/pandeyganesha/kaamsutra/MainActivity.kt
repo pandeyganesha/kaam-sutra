@@ -184,6 +184,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 },
                 onEditClicked = { goal -> goalBeingEdited = goal },
                 onDeleteClicked = { goal -> goalBeingDeleted = goal },
+                onSortOrderUpdate = { reorderedList ->
+                    scope.launch {
+                        db.goalDao().updateGoals(reorderedList)
+                    }
+                },
                 modifier = Modifier.padding(innerPadding)
             )
 
