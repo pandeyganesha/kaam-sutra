@@ -44,6 +44,9 @@ interface GoalDao {
     @Update
     suspend fun updateGoal(goal: Goal)
 
+    @Update
+    suspend fun updateGoals(goals: List<Goal>)
+
     @Query("UPDATE goals SET status = 'DELETED', sortOrder = -1  WHERE id = :goalId")
     suspend fun softDeleteGoal(goalId: String)
 
