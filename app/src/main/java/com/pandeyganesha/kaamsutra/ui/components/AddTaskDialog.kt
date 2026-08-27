@@ -27,17 +27,17 @@ fun AddTaskDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add ${currentScreen.title}")},
+        title = { Text("Add ${currentScreen.singular}")},
         text = {
             Column {
                 OutlinedTextField(
                     value = taskNameText,
                     onValueChange = { taskNameText = it },
-                    label = {Text("${currentScreen.title} Name")}
+                    label = {Text("Enter ${currentScreen.singular}")}
                 )
                 if (isDuplicate) {
                     Text(
-                        text = "${currentScreen.title} already exists",
+                        text = "${currentScreen.singular} already exists",
                         color = Color.Red
                     )
                 }

@@ -12,11 +12,11 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Star
 
 
-enum class Screen(val title: String) {
+enum class Screen(val singular: String, val plural: String) {
 //    HOME("Home"),
-    HABITS("Habits"),
-    GOALS("Goals"),
-    TODO("To-Do")
+    HABITS("Habit", "Habits"),
+    GOALS("Goal", "Goals"),
+    TODO("ToDo", "Todo" )
 }
 
 @Composable
