@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.ui.text.style.TextDecoration
 
 
 @Composable
@@ -42,7 +43,11 @@ fun TaskRow(
                 .weight(1f)
                 .padding(horizontal = 8.dp)
         ) {
-            Text(text = taskName)
+            Text(text = taskName, textDecoration = if (isChecked) {
+                TextDecoration.LineThrough }
+                else {
+                    TextDecoration.None
+                } )
         }
         IconButton(onClick = onEditClick) {
             Icon(Icons.Default.Edit, contentDescription = "Edit")
