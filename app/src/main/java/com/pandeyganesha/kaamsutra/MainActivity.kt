@@ -137,7 +137,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
         },
         topBar = {
             AppTopBar(
-                title = currentScreen.title,
+                title = currentScreen.plural,
                 modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
         },

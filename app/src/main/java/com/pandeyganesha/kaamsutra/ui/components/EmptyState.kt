@@ -26,7 +26,7 @@ fun EmptyState(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "Tap anywhere to add your first ${pageName.title}",
+            text = "Tap anywhere to add your first ${pageName.singular}",
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
