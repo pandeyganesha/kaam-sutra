@@ -40,8 +40,7 @@ import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
 import com.pandeyganesha.kaamsutra.ui.components.AppBottomBar
 import com.pandeyganesha.kaamsutra.ui.components.AppTopBar
-import com.pandeyganesha.kaamsutra.ui.components.HomeScreen
-import com.pandeyganesha.kaamsutra.ui.components.HabitScreen
+import com.pandeyganesha.kaamsutra.ui.components.habits.HabitScreen
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add

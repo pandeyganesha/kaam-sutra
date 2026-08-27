@@ -1,4 +1,4 @@
-package com.pandeyganesha.kaamsutra.ui.components
+package com.pandeyganesha.kaamsutra.ui.components.habits
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import com.pandeyganesha.kaamsutra.ui.components.TaskRow
 
 @Composable
 fun HabitScreen(activeHabits: List<Habit>,
@@ -49,23 +50,23 @@ fun HabitScreen(activeHabits: List<Habit>,
     LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
         items(habitsNotDone, key = {it.id}) { habit ->
             ReorderableItem(reorderableState, key = habit.id) { isDragging ->
-            TaskRow(
-                taskName = habit.name,
-                isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed},
-                onCheckedChange = { checked -> onCheckedChange(checked, habit) },
-                onEditClick = { onEditClicked(habit) },
-                onDeleteClick = { onDeleteClicked(habit) },
-                modifier = Modifier.longPressDraggableHandle(
-                    onDragStopped = {
-                        val size = habitsNotDone.size
-                        val reordered = habitsNotDone.mapIndexed { index, h ->
-                            h.copy(sortOrder = size - 1 - index)
+                TaskRow(
+                    taskName = habit.name,
+                    isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
+                    onCheckedChange = { checked -> onCheckedChange(checked, habit) },
+                    onEditClick = { onEditClicked(habit) },
+                    onDeleteClick = { onDeleteClicked(habit) },
+                    modifier = Modifier.longPressDraggableHandle(
+                        onDragStopped = {
+                            val size = habitsNotDone.size
+                            val reordered = habitsNotDone.mapIndexed { index, h ->
+                                h.copy(sortOrder = size - 1 - index)
+                            }
+                            habitsNotDone = reordered
+                            onSortOrderUpdate(reordered)
                         }
-                        habitsNotDone = reordered
-                        onSortOrderUpdate(reordered)
-                    }
+                    )
                 )
-            )
             }
         }
         if (habitsDone.isNotEmpty()) {
