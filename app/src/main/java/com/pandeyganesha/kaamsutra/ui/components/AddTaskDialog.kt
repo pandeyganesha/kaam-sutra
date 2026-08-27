@@ -11,7 +11,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
-
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 
 @Composable
@@ -24,7 +28,8 @@ fun AddTaskDialog(
 ) {
     var taskNameText by remember { mutableStateOf(taskName) }
     val isDuplicate = taskNameText in existingTaskNames
-
+    val focusRequester = remember { FocusRequester() }
+    val keyboard = LocalSoftwareKeyboardController.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add ${currentScreen.singular}")},
@@ -33,8 +38,13 @@ fun AddTaskDialog(
                 OutlinedTextField(
                     value = taskNameText,
                     onValueChange = { taskNameText = it },
-                    label = {Text("Enter ${currentScreen.singular}")}
+                    label = {Text("Enter ${currentScreen.singular}")},
+                    modifier = Modifier.focusRequester(focusRequester)
                 )
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()
+                    keyboard?.show()
+                }
                 if (isDuplicate) {
                     Text(
                         text = "${currentScreen.singular} already exists",
