@@ -51,6 +51,8 @@ import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
 import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
 import com.pandeyganesha.kaamsutra.ui.components.EmptyState
 import com.pandeyganesha.kaamsutra.ui.components.habits.AddHabitDialog
+import com.pandeyganesha.kaamsutra.ui.components.habits.RepeatType
+import java.time.DayOfWeek
 
 
 class MainActivity : ComponentActivity() {
@@ -80,6 +82,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+fun periodStartDateFor(habit: Habit, date: LocalDate): LocalDate {
+    return when (habit.repeatType) {
+        RepeatType.DAILY -> date
+        RepeatType.WEEKLY -> date.with(DayOfWeek.MONDAY)
+        RepeatType.MONTHLY -> date.withDayOfMonth(1)
+        RepeatType.YEARLY -> date.withDayOfYear(1)
+        RepeatType.CUSTOM -> date // TODO later
+    }
+}
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -96,7 +107,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val todoDao = db.todoDao()
     val habitDao = db.habitDao()
     val goalDao = db.goalDao()
-    val taskLogDao = db.habitLogDao()
+    val habitLogDao = db.habitLogDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
     val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
@@ -121,19 +132,26 @@ fun KaamSutraApp(screenToOpen: Screen) {
     var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
     var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
     var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
-    val today = remember { LocalDate.now().toString() }
-    val allHabitLogsForToday  by taskLogDao.getLogsFor(today).collectAsState(initial = emptyList())
+    val today = LocalDate.now()
+    val relevantPeriodDates = remember(today) {
+        listOf(
+            today.toString(),
+            today.with(DayOfWeek.MONDAY).toString(),
+            today.withDayOfMonth(1).toString(),
+            today.withDayOfYear(1).toString()
+        )
+    }
+    val allHabitLogsForCurrentPeriods by habitLogDao.getLogsForDates(relevantPeriodDates)
+        .collectAsState(initial = emptyList())
 
 
     Scaffold(
         floatingActionButton = {
-            // replace true with currentScreen != Screen.HOME if needed to enable HOME again
-            if (true) {
-                FloatingActionButton(
-                    onClick = { showDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
+            FloatingActionButton(
+                onClick = { showDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
             }
+
         },
         topBar = {
             AppTopBar(
@@ -162,33 +180,31 @@ fun KaamSutraApp(screenToOpen: Screen) {
             }
             else {
                 when (Screen.entries[page]) {
-//            Screen.HOME -> HomeScreen(
-//                modifier = Modifier.padding(innerPadding)
-//            )
-
-                    Screen.HABITS -> HabitScreen(
-                        activeHabits = activeHabits,
-                        allHabitLogsForToday = allHabitLogsForToday,
-                        onCheckedChange = { checked, habit ->
-                            coroutineScope.launch {
-                                taskLogDao.upsertLog(
-                                    HabitLog(
-                                        habitId = habit.id,
-                                        habitDate = today,
-                                        completed = checked
+                    Screen.HABITS -> {
+                        HabitScreen(
+                            activeHabits = activeHabits,
+                            allHabitLogsForCurrentPeriods = allHabitLogsForCurrentPeriods,
+                            onCheckedChange = { checked, habit ->
+                                coroutineScope.launch {
+                                    habitLogDao.upsertLog(
+                                        HabitLog(
+                                            habitId = habit.id,
+                                            habitDate = periodStartDateFor(habit, LocalDate.now()).toString(),
+                                            completed = checked
+                                        )
                                     )
-                                )
-                            }
-                        },
-                        onEditClicked = { habit -> habitBeingEdited = habit },
-                        onDeleteClicked = { habit -> habitBeingDeleted = habit },
-                        onSortOrderUpdate = { reorderedList ->
-                            scope.launch {
-                                db.habitDao().updateHabits(reorderedList)
-                            }
-                        },
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                                }
+                            },
+                            onEditClicked = { habit -> habitBeingEdited = habit },
+                            onDeleteClicked = { habit -> habitBeingDeleted = habit },
+                            onSortOrderUpdate = { reorderedList ->
+                                scope.launch {
+                                    db.habitDao().updateHabits(reorderedList)
+                                }
+                            },
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
 
                     Screen.GOALS -> GoalScreen(
                         activeGoals = activeGoals,

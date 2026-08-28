@@ -1,6 +1,5 @@
 package com.pandeyganesha.kaamsutra.ui.components.habits
 
-import android.R
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -26,7 +25,7 @@ import androidx.compose.ui.graphics.Color
 @Composable
 fun HabitRow(
     habit: Habit,
-    forAll: Boolean,
+    showRepeatTypeOrDays: Boolean,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onEditClick: () -> Unit,
@@ -58,7 +57,7 @@ fun HabitRow(
                     TextDecoration.None
             } )
 
-            if (forAll) {
+            if (showRepeatTypeOrDays) {
                 Text(
                     text = if (habit.repeatType == RepeatType.CUSTOM) "${habit.repeatDays} Days" else habit.repeatType.displayName,
                     fontSize = 14.sp,

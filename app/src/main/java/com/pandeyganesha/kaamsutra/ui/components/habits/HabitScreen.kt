@@ -42,7 +42,7 @@ enum class RepeatTypeChip(val displayName: String) {
 
 @Composable
 fun HabitScreen(activeHabits: List<Habit>,
-                allHabitLogsForToday: List<HabitLog>,
+                allHabitLogsForCurrentPeriods: List<HabitLog>,
                 onCheckedChange: (Boolean, Habit) -> Unit,
                 onEditClicked: (Habit) -> Unit,
                 onDeleteClicked: (Habit) -> Unit,
@@ -54,7 +54,7 @@ fun HabitScreen(activeHabits: List<Habit>,
     }
     val lazyListState = rememberLazyListState()
     val filteredHabitsForRepeatType = filterHabitsByRepeatType(activeHabits, selected)
-    var habitsWithLogs by remember(filteredHabitsForRepeatType, allHabitLogsForToday) {
+    var habitsWithLogs by remember(filteredHabitsForRepeatType, allHabitLogsForCurrentPeriods) {
         mutableStateOf(filteredHabitsForRepeatType) }
 
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -91,8 +91,8 @@ fun HabitScreen(activeHabits: List<Habit>,
                 ReorderableItem(reorderableState, key = habit.id) { isDragging ->
                     HabitRow(
                         habit = habit,
-                        forAll = selected == RepeatTypeChip.ALL,
-                        isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
+                        showRepeatTypeOrDays = selected == RepeatTypeChip.ALL || selected == RepeatTypeChip.CUSTOM ,
+                        isChecked = allHabitLogsForCurrentPeriods.any { it.habitId == habit.id && it.completed },
                         onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                         onEditClick = { onEditClicked(habit) },
                         onDeleteClick = { onDeleteClicked(habit) },

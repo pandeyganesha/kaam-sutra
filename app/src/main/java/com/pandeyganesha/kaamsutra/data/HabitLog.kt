@@ -54,4 +54,7 @@ interface HabitLogDao {
     @Query("SELECT * FROM habit_log WHERE habitDate = :date")
     suspend fun getLogsForDateOnce(date: String): List<HabitLog>
 
+    @Query("SELECT * FROM habit_log WHERE habitDate IN (:dates)")
+    fun getLogsForDates(dates: List<String>): Flow<List<HabitLog>>
+
 }
