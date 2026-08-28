@@ -249,7 +249,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             },
             onConfirm = { habitName ->
                 coroutineScope.launch {
-                    habitDao.updateHabit(habit.copy(name = habitName))
+                    habitDao.updateHabit(habit.copy(name = habitName.trim()))
                     habitBeingEdited = null
                 }
             }
@@ -277,7 +277,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             },
             onConfirm = { goalName ->
                 coroutineScope.launch {
-                    todoDao.updateTodo(todo.copy(name = goalName))
+                    todoDao.updateTodo(todo.copy(name = goalName.trim()))
                     todoBeingEdited = null
                 }
             }
@@ -306,7 +306,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             },
             onConfirm = { goalName ->
                 coroutineScope.launch {
-                    goalDao.updateGoal(goal.copy(name = goalName))
+                    goalDao.updateGoal(goal.copy(name = goalName.trim()))
                     goalBeingEdited = null
                 }
             }
@@ -318,9 +318,9 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 existingHabitNames = existingNames[currentScreen].orEmpty(),
                 currentScreen = currentScreen,
                 onDismiss = { showDialog = false },
-                onConfirm = { taskName ->
+                onConfirm = { habitName ->
                     coroutineScope.launch {
-                                habitDao.createHabit(taskName)
+                                habitDao.createHabit(habitName.trim())
                     }
                     showDialog = false
                 })
@@ -334,11 +334,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     coroutineScope.launch {
                         when (currentScreen) {
                             Screen.TODO -> {
-                                todoDao.createTodo(taskName)
+                                todoDao.createTodo(taskName.trim())
                             }
 
                             Screen.GOALS -> {
-                                goalDao.createGoal(taskName)
+                                goalDao.createGoal(taskName.trim())
                             }
                         }
                     }

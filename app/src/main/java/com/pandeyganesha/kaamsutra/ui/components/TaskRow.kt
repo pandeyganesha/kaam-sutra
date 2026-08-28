@@ -43,7 +43,7 @@ fun TaskRow(
                 .weight(1f)
                 .padding(horizontal = 8.dp)
         ) {
-            Text(text = taskName, textDecoration = if (isChecked) {
+            Text(text = taskName.trim(), textDecoration = if (isChecked) {
                 TextDecoration.LineThrough }
                 else {
                     TextDecoration.None

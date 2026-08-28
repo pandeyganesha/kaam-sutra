@@ -108,7 +108,7 @@ fun AddHabitDialog(
             TextButton(onClick = {
                 onConfirm(habitNameText)
             },
-                enabled = !isDuplicate && habitNameText.isNotBlank() && (selected==Option.CUSTOM && noOfDays.isNotBlank())
+                enabled = !isDuplicate && habitNameText.isNotBlank() && (selected != Option.CUSTOM || noOfDays.isNotBlank())
             ) {
                 Text("Confirm")
             }
