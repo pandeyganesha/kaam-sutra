@@ -89,8 +89,9 @@ fun HabitScreen(activeHabits: List<Habit>,
         LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
             items(habitsWithLogs, key = { it.id }) { habit ->
                 ReorderableItem(reorderableState, key = habit.id) { isDragging ->
-                    TaskRow(
-                        taskName = habit.name,
+                    HabitRow(
+                        habit = habit,
+                        forAll = selected == RepeatTypeChip.ALL,
                         isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
                         onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                         onEditClick = { onEditClicked(habit) },
