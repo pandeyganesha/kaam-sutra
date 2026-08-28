@@ -23,8 +23,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.foundation.text.KeyboardOptions
 import com.pandeyganesha.kaamsutra.data.Habit
 
 enum class RepeatType(val displayName: String) {
@@ -32,7 +30,6 @@ enum class RepeatType(val displayName: String) {
     WEEKLY("Weekly"),
     MONTHLY("Monthly"),
     YEARLY("Yearly"),
-    CUSTOM("Custom")
 }
 
 @Composable
@@ -48,7 +45,6 @@ fun AddHabitDialog(
     var habitNameText by remember { mutableStateOf(habit?.name ?: "") }
     val isDuplicate = habitNameText in existingHabitNamesExcludingItself
     val nameRequester = remember { FocusRequester() }
-    val daysFocusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     var selected by remember {
         mutableStateOf(habit?.repeatType ?: RepeatType.DAILY)
@@ -91,27 +87,6 @@ fun AddHabitDialog(
                             }
                         )
                     }
-
-                }
-                if (selected == RepeatType.CUSTOM) {
-                    OutlinedTextField(
-                        value = repeatDays,
-                        onValueChange = { value ->
-                            if (value.all { it.isDigit() }) {
-                                repeatDays = value
-                            }
-                        },
-                        label = { Text("No Of Days") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number
-                        ),
-                        modifier = Modifier.focusRequester(daysFocusRequester)
-                    )
-
-                    LaunchedEffect(Unit) {
-                        daysFocusRequester.requestFocus()
-                        keyboard?.show()
-                    }
                 }
             }
         },
@@ -130,7 +105,7 @@ fun AddHabitDialog(
                     )
                 )
             },
-                enabled = !isDuplicate && habitNameText.isNotBlank() && (selected != RepeatType.CUSTOM || repeatDays.isNotBlank())
+                enabled = !isDuplicate && habitNameText.isNotBlank()
             ) {
                 Text("Confirm")
             }

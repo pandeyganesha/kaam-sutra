@@ -88,7 +88,6 @@ fun periodStartDateFor(habit: Habit, date: LocalDate): LocalDate {
         RepeatType.WEEKLY -> date.with(DayOfWeek.MONDAY)
         RepeatType.MONTHLY -> date.withDayOfMonth(1)
         RepeatType.YEARLY -> date.withDayOfYear(1)
-        RepeatType.CUSTOM -> date // TODO later
     }
 }
 

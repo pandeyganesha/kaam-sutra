@@ -17,7 +17,6 @@ import androidx.compose.runtime.remember
 import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import com.pandeyganesha.kaamsutra.ui.components.TaskRow
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.FilterChip
@@ -37,7 +36,6 @@ enum class RepeatTypeChip(val displayName: String) {
     WEEKLY("Weekly"),
     MONTHLY("Monthly"),
     YEARLY("Yearly"),
-    CUSTOM("Custom")
 }
 
 @Composable
@@ -91,7 +89,7 @@ fun HabitScreen(activeHabits: List<Habit>,
                 ReorderableItem(reorderableState, key = habit.id) { isDragging ->
                     HabitRow(
                         habit = habit,
-                        showRepeatTypeOrDays = selected == RepeatTypeChip.ALL || selected == RepeatTypeChip.CUSTOM ,
+                        showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
                         isChecked = allHabitLogsForCurrentPeriods.any { it.habitId == habit.id && it.completed },
                         onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                         onEditClick = { onEditClicked(habit) },

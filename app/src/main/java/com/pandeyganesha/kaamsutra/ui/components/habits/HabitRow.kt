@@ -59,7 +59,7 @@ fun HabitRow(
 
             if (showRepeatTypeOrDays) {
                 Text(
-                    text = if (habit.repeatType == RepeatType.CUSTOM) "${habit.repeatDays} Days" else habit.repeatType.displayName,
+                    text = habit.repeatType.displayName,
                     fontSize = 14.sp,
                     fontStyle = FontStyle.Italic,
                     color = Color(0xFFB8B8B8)
