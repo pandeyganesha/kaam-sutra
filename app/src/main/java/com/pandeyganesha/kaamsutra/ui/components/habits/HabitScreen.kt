@@ -20,6 +20,26 @@ import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import com.pandeyganesha.kaamsutra.ui.components.TaskRow
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.geometry.Offset
+
+enum class RepeatTypeChip(val displayName: String) {
+    ALL("All"),
+    DAILY("Daily"),
+    WEEKLY("Weekly"),
+    MONTHLY("Monthly"),
+    YEARLY("Yearly"),
+    CUSTOM("Custom")
+}
 
 @Composable
 fun HabitScreen(activeHabits: List<Habit>,
@@ -30,7 +50,9 @@ fun HabitScreen(activeHabits: List<Habit>,
                 onSortOrderUpdate: (List<Habit>) -> Unit,
                 modifier: Modifier
                 ) {
-
+    var selected by remember {
+        mutableStateOf(RepeatTypeChip.ALL)
+    }
     val lazyListState = rememberLazyListState()
     var habitsNotDone by remember(activeHabits, allHabitLogsForToday) {
         mutableStateOf(activeHabits.filter { habit ->
@@ -39,59 +61,86 @@ fun HabitScreen(activeHabits: List<Habit>,
             }
         })
     }
-    val habitsDone = activeHabits.filter { habit -> allHabitLogsForToday.any {
-        it.habitId == habit.id && it.completed
-    } }
+    val habitsDone = activeHabits.filter { habit ->
+        allHabitLogsForToday.any {
+            it.habitId == habit.id && it.completed
+        }
+    }
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         habitsNotDone = habitsNotDone.toMutableList().apply {
             add(to.index, removeAt(from.index))
         }
     }
-    LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
-        items(habitsNotDone, key = {it.id}) { habit ->
-            ReorderableItem(reorderableState, key = habit.id) { isDragging ->
-                TaskRow(
-                    taskName = habit.name,
-                    isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
-                    onCheckedChange = { checked -> onCheckedChange(checked, habit) },
-                    onEditClick = { onEditClicked(habit) },
-                    onDeleteClick = { onDeleteClicked(habit) },
-                    modifier = Modifier.longPressDraggableHandle(
-                        onDragStopped = {
-                            val size = habitsNotDone.size
-                            val reordered = habitsNotDone.mapIndexed { index, h ->
-                                h.copy(sortOrder = size - 1 - index)
-                            }
-                            habitsNotDone = reordered
-                            onSortOrderUpdate(reordered)
-                        }
-                    )
+    Column(modifier = modifier.fillMaxSize()) {
+        val chipsScrollState = rememberScrollState()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 14.dp, end = 14.dp, top=14.dp)
+                .nestedScroll(object: NestedScrollConnection{
+                    override fun onPostScroll(
+                        consumed: Offset,
+                        available: Offset,
+                        source: NestedScrollSource
+                    ): Offset = available
+                })
+                .horizontalScroll(chipsScrollState),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            RepeatTypeChip.entries.forEach { repeatTypeChip ->
+                FilterChip(
+                    selected = selected == repeatTypeChip,
+                    onClick = { selected = repeatTypeChip },
+                    label = { Text(repeatTypeChip.displayName) }
                 )
             }
         }
-        if (habitsDone.isNotEmpty()) {
-            item {
-                Text(
-                    "Done",
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 28.dp,
-                        bottom = 8.dp
+        LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+            items(habitsNotDone, key = { it.id }) { habit ->
+                ReorderableItem(reorderableState, key = habit.id) { isDragging ->
+                    TaskRow(
+                        taskName = habit.name,
+                        isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
+                        onCheckedChange = { checked -> onCheckedChange(checked, habit) },
+                        onEditClick = { onEditClicked(habit) },
+                        onDeleteClick = { onDeleteClicked(habit) },
+                        modifier = Modifier.longPressDraggableHandle(
+                            onDragStopped = {
+                                val size = habitsNotDone.size
+                                val reordered = habitsNotDone.mapIndexed { index, h ->
+                                    h.copy(sortOrder = size - 1 - index)
+                                }
+                                habitsNotDone = reordered
+                                onSortOrderUpdate(reordered)
+                            }
+                        )
                     )
-                )
+                }
             }
-            items(habitsDone, key = { it.id }) { habit ->
-                TaskRow(
-                    taskName = habit.name,
-                    isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
-                    onCheckedChange = { checked -> onCheckedChange(checked, habit) },
-                    onEditClick = { onEditClicked(habit) },
-                    onDeleteClick = { onDeleteClicked(habit) }
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.height(75.dp))
+            if (habitsDone.isNotEmpty()) {
+                item {
+                    Text(
+                        "Done",
+                        modifier = Modifier.padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 28.dp,
+                            bottom = 8.dp
+                        )
+                    )
+                }
+                items(habitsDone, key = { it.id }) { habit ->
+                    TaskRow(
+                        taskName = habit.name,
+                        isChecked = allHabitLogsForToday.any { it.habitId == habit.id && it.completed },
+                        onCheckedChange = { checked -> onCheckedChange(checked, habit) },
+                        onEditClick = { onEditClicked(habit) },
+                        onDeleteClick = { onDeleteClicked(habit) }
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(75.dp))
+                }
             }
         }
     }
