@@ -6,9 +6,12 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.pandeyganesha.kaamsutra.ui.components.Screen
+import java.time.DayOfWeek
+import com.pandeyganesha.kaamsutra.ui.components.habits.RepeatType
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
+import java.time.Month
+
 
 class MissedHabitWorker(
     context: Context,
@@ -19,23 +22,40 @@ class MissedHabitWorker(
         val db = DatabaseProvider.getDatabase(applicationContext)
         val habitDao = db.habitDao()
         val habitLogDao = db.habitLogDao()
-
-        val dayJustEnded = LocalDate.now().minusDays(1).toString()
-
+        val today = LocalDate.now()
         val activeHabits = habitDao.getActiveHabitsOnce()
-        val yesterdaysLogs = habitLogDao.getLogsForDateOnce(dayJustEnded)
 
-        val missedHabits = activeHabits.filter { habit ->
-            yesterdaysLogs.none { it.habitId == habit.id }
+        // Settle Daily habits
+        settlePeriod(
+            habits = activeHabits.filter { it.repeatType == RepeatType.DAILY },
+            periodDate = today.minusDays(1),
+            habitLogDao = habitLogDao
+        )
+
+        // Settle weekly habits
+        if (today.dayOfWeek == DayOfWeek.MONDAY) {
+            settlePeriod(
+                habits = activeHabits.filter { it.repeatType == RepeatType.WEEKLY },
+                periodDate = today.minusWeeks(1), // Monday of the week that ended
+                habitLogDao = habitLogDao
+            )
         }
 
-        missedHabits.forEach { habit ->
-            habitLogDao.insertLog(
-                HabitLog(
-                    habitId = habit.id,
-                    habitDate = dayJustEnded,
-                    completed = false
-                )
+        // Settle monthly
+        if (today.dayOfMonth == 1) {
+            settlePeriod(
+                habits = activeHabits.filter { it.repeatType == RepeatType.MONTHLY },
+                periodDate = today.minusMonths(1).withDayOfMonth(1),
+                habitLogDao = habitLogDao
+            )
+        }
+
+        // Settle yearly
+        if (today.month == Month.JANUARY && today.dayOfMonth == 1) {
+            settlePeriod(
+                habits = activeHabits.filter { it.repeatType == RepeatType.YEARLY },
+                periodDate = LocalDate.of(today.year - 1, 1, 1),
+                habitLogDao = habitLogDao
             )
         }
 
@@ -53,4 +73,28 @@ fun scheduleMissedHabitSettlement(context: Context) {
         ExistingPeriodicWorkPolicy.KEEP,
         workRequest
     )
+}
+
+private suspend fun settlePeriod(
+    habits: List<Habit>,
+    periodDate: LocalDate,
+    habitLogDao: HabitLogDao
+){
+    if (habits.isEmpty()) return
+
+    val periodDateStr = periodDate.toString()
+    val existingLogs = habitLogDao.getLogsForDateOnce(periodDateStr)
+
+    val missedHabits = habits.filter { habit ->
+        existingLogs.none { it.habitId == habit.id }
+    }
+    missedHabits.forEach { habit ->
+        habitLogDao.insertLog(
+            HabitLog(
+                habitId = habit.id,
+                habitDate = periodDateStr,
+                completed = false
+            )
+        )
+    }
 }

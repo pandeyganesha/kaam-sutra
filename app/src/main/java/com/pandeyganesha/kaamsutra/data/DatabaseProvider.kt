@@ -6,6 +6,8 @@ import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_9_10
 import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_10_11
 import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_11_12
 import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_12_13
+import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_13_14
+
 
 object DatabaseProvider {
 
@@ -23,7 +25,8 @@ object DatabaseProvider {
                     MIGRATION_9_10,
                     MIGRATION_10_11,
                     MIGRATION_11_12,
-                    MIGRATION_12_13
+                    MIGRATION_12_13,
+                    MIGRATION_13_14
                 )
                 .build()
                 .also { instance = it }
