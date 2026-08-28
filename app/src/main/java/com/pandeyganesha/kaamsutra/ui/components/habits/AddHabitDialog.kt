@@ -23,8 +23,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+import com.pandeyganesha.kaamsutra.data.Habit
 
-enum class Option(val displayName: String) {
+enum class RepeatType(val displayName: String) {
     DAILY("Daily"),
     WEEKLY("Weekly"),
     MONTHLY("Monthly"),
@@ -34,20 +37,21 @@ enum class Option(val displayName: String) {
 
 @Composable
 fun AddHabitDialog(
-    habitName: String = "",
+    habit: Habit? = null,
     existingHabitNames: Set<String>,
     currentScreen: Screen,
     onDismiss: () -> Unit,
-    onConfirm: (habitName: String) -> Unit,
+    onConfirm: (habit: Habit) -> Unit,
 ) {
-    var noOfDays by remember { mutableStateOf("1") }
-    var habitNameText by remember { mutableStateOf(habitName) }
-    val isDuplicate = habitNameText in existingHabitNames
+    val existingHabitNamesExcludingItself = existingHabitNames - habit?.name
+    var repeatDays by remember { mutableStateOf(habit?.repeatDays?.toString() ?: "") }
+    var habitNameText by remember { mutableStateOf(habit?.name ?: "") }
+    val isDuplicate = habitNameText in existingHabitNamesExcludingItself
     val nameRequester = remember { FocusRequester() }
     val daysFocusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     var selected by remember {
-        mutableStateOf(Option.DAILY)
+        mutableStateOf(habit?.repeatType ?: RepeatType.DAILY)
     }
 
     AlertDialog(
@@ -76,39 +80,57 @@ fun AddHabitDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Option.entries.forEach { option ->
+                    RepeatType.entries.forEach { repeatType ->
                         FilterChip(
-                            selected = selected == option,
+                            selected = selected == repeatType,
                             onClick = {
-                                selected = option
+                                selected = repeatType
                             },
                             label = {
-                                Text(option.displayName)
+                                Text(repeatType.displayName)
                             }
                         )
                     }
 
                 }
-                if (selected == Option.CUSTOM){
+                if (selected == RepeatType.CUSTOM) {
                     OutlinedTextField(
-                        value = noOfDays,
-                        onValueChange = { noOfDays = it },
-                        label = {Text("No Of Days")},
+                        value = repeatDays,
+                        onValueChange = { value ->
+                            if (value.all { it.isDigit() }) {
+                                repeatDays = value
+                            }
+                        },
+                        label = { Text("No Of Days") },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
                         modifier = Modifier.focusRequester(daysFocusRequester)
                     )
-                }
-                LaunchedEffect(selected) {
-                    daysFocusRequester.requestFocus()
-                    keyboard?.show()
+
+                    LaunchedEffect(Unit) {
+                        daysFocusRequester.requestFocus()
+                        keyboard?.show()
+                    }
                 }
             }
         },
         confirmButton = {
 
             TextButton(onClick = {
-                onConfirm(habitNameText)
+                onConfirm(
+                    habit?.copy(
+                        name = habitNameText,
+                        repeatType = selected,
+                        repeatDays = repeatDays.toIntOrNull()
+                    ) ?: Habit(
+                        name = habitNameText,
+                        repeatType = selected,
+                        repeatDays = repeatDays.toIntOrNull()
+                    )
+                )
             },
-                enabled = !isDuplicate && habitNameText.isNotBlank() && (selected != Option.CUSTOM || noOfDays.isNotBlank())
+                enabled = !isDuplicate && habitNameText.isNotBlank() && (selected != RepeatType.CUSTOM || repeatDays.isNotBlank())
             ) {
                 Text("Confirm")
             }

@@ -228,3 +228,52 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
         """.trimIndent())
     }
 }
+
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+
+        db.execSQL(
+            """
+            CREATE TABLE habits_new (
+                id TEXT NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                sortOrder INTEGER,
+                repeatType TEXT NOT NULL,
+                repeatDays INTEGER,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL,
+                status TEXT NOT NULL
+            )
+            """.trimIndent()
+        )
+
+        db.execSQL(
+            """
+            INSERT INTO habits_new (
+                id,
+                name,
+                sortOrder,
+                repeatType,
+                repeatDays,
+                createdAt,
+                updatedAt,
+                status
+            )
+            SELECT
+                id,
+                name,
+                sortOrder,
+                'DAILY',
+                NULL,
+                createdAt,
+                updatedAt,
+                status
+            FROM habits
+            """.trimIndent()
+        )
+
+        db.execSQL("DROP TABLE habits")
+
+        db.execSQL("ALTER TABLE habits_new RENAME TO habits")
+    }
+}

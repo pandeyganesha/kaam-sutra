@@ -241,15 +241,15 @@ fun KaamSutraApp(screenToOpen: Screen) {
     }
     habitBeingEdited?.let { habit ->
         AddHabitDialog (
-            habitName = habit.name,
-            existingHabitNames = existingNames[currentScreen].orEmpty() - habit.name,
+            habit = habit,
+            existingHabitNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = {
                 habitBeingEdited = null
             },
-            onConfirm = { habitName ->
+            onConfirm = { habit ->
                 coroutineScope.launch {
-                    habitDao.updateHabit(habit.copy(name = habitName.trim()))
+                    habitDao.updateHabit(habit)
                     habitBeingEdited = null
                 }
             }
@@ -318,9 +318,9 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 existingHabitNames = existingNames[currentScreen].orEmpty(),
                 currentScreen = currentScreen,
                 onDismiss = { showDialog = false },
-                onConfirm = { habitName ->
+                onConfirm = { habit ->
                     coroutineScope.launch {
-                                habitDao.createHabit(habitName.trim())
+                                habitDao.createHabit(habit)
                     }
                     showDialog = false
                 })

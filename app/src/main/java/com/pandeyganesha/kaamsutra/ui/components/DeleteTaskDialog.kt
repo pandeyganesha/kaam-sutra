@@ -13,7 +13,7 @@ fun DeleteTaskDialog(
 ){
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Delete '$taskName' ?") },
+        title = { Text("Delete '${taskName.trim()}' ?") },
         confirmButton = {
 
             TextButton(onClick = { onConfirm()}) {

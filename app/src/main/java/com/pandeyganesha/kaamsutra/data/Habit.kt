@@ -9,13 +9,16 @@ import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 import androidx.room.OnConflictStrategy
 import androidx.room.Update
+import com.pandeyganesha.kaamsutra.ui.components.habits.RepeatType
 
 
 @Entity(tableName = "habits")
 data class Habit(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
-    val sortOrder: Int,
+    val sortOrder: Int? = null,
+    val repeatType: RepeatType,
+    val repeatDays: Int? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
     val status: Status = Status.ACTIVE
@@ -30,13 +33,8 @@ interface HabitDao {
     suspend fun nextSortOrder(): Int
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun createHabit(name: String) {
-        insert(
-            Habit(
-                name = name,
-                sortOrder = nextSortOrder()
-            )
-        )
+    suspend fun createHabit(habit: Habit) {
+        insert(habit.copy(sortOrder = nextSortOrder()))
     }
 
     @Update
