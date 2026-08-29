@@ -1,4 +1,4 @@
-package com.pandeyganesha.kaamsutra.ui.components
+package com.pandeyganesha.kaamsutra.ui.components.goals
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import com.pandeyganesha.kaamsutra.ui.components.TaskRow
 
 
 @Composable
@@ -29,12 +30,10 @@ fun GoalScreen(activeGoals: List<Goal>,
                modifier: Modifier
 ) {
     val lazyListState = rememberLazyListState()
-
     var goalsNotDone by remember(activeGoals) {
         mutableStateOf(activeGoals.filter { !it.completed })
     }
     val goalsDone = activeGoals.filter { it.completed }
-
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         goalsNotDone = goalsNotDone.toMutableList().apply {
             add(to.index, removeAt(from.index))
@@ -45,8 +44,8 @@ fun GoalScreen(activeGoals: List<Goal>,
         items(goalsNotDone, key = { it.id }) { goal ->
             ReorderableItem(reorderableState, key = goal.id) { isDragging ->
 
-                TaskRow(
-                    taskName = goal.name,
+                GoalRow(
+                    goal = goal,
                     isChecked = goal.completed,
                     onCheckedChange = { checked -> onCheckedChange(checked, goal) },
                     onEditClick = { onEditClicked(goal) },
@@ -77,8 +76,8 @@ fun GoalScreen(activeGoals: List<Goal>,
                 )
             }
             items(goalsDone, key = { it.id }) { goal ->
-                TaskRow(
-                    taskName = goal.name,
+                GoalRow(
+                    goal = goal,
                     isChecked = goal.completed,
                     onCheckedChange = { checked -> onCheckedChange(checked, goal) },
                     onEditClick = { onEditClicked(goal) },

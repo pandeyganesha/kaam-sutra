@@ -47,9 +47,10 @@ import androidx.compose.material.icons.filled.Add
 import com.pandeyganesha.kaamsutra.data.Goal
 import com.pandeyganesha.kaamsutra.data.Status
 import com.pandeyganesha.kaamsutra.data.Todo
-import com.pandeyganesha.kaamsutra.ui.components.GoalScreen
+import com.pandeyganesha.kaamsutra.ui.components.goals.GoalScreen
 import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
 import com.pandeyganesha.kaamsutra.ui.components.EmptyState
+import com.pandeyganesha.kaamsutra.ui.components.goals.AddGoalDialog
 import com.pandeyganesha.kaamsutra.ui.components.habits.AddHabitDialog
 import com.pandeyganesha.kaamsutra.ui.components.habits.RepeatType
 import java.time.DayOfWeek
@@ -312,53 +313,59 @@ fun KaamSutraApp(screenToOpen: Screen) {
         )
     }
     goalBeingEdited?.let { goal ->
-        AddTaskDialog(
-            taskName = goal.name,
-            existingTaskNames = existingNames[currentScreen].orEmpty() - goal.name,
+        AddGoalDialog(
+            goal = goal,
+            existingGoalNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = {
                 goalBeingEdited = null
             },
             onConfirm = { goalName ->
                 coroutineScope.launch {
-                    goalDao.updateGoal(goal.copy(name = goalName.trim()))
+                    goalDao.updateGoal(goal)
                     goalBeingEdited = null
                 }
             }
         )
     }
     if (showDialog) {
-        if (currentScreen == Screen.HABITS) {
-            AddHabitDialog(
-                existingHabitNames = existingNames[currentScreen].orEmpty(),
-                currentScreen = currentScreen,
-                onDismiss = { showDialog = false },
-                onConfirm = { habit ->
-                    coroutineScope.launch {
-                                habitDao.createHabit(habit)
-                    }
-                    showDialog = false
-                })
-        }
-        else {
-            AddTaskDialog(
-                existingTaskNames = existingNames[currentScreen].orEmpty(),
-                currentScreen = currentScreen,
-                onDismiss = { showDialog = false },
-                onConfirm = { taskName ->
-                    coroutineScope.launch {
-                        when (currentScreen) {
-                            Screen.TODO -> {
-                                todoDao.createTodo(taskName.trim())
-                            }
-
-                            Screen.GOALS -> {
-                                goalDao.createGoal(taskName.trim())
-                            }
+        when (currentScreen) {
+            Screen.HABITS ->
+                AddHabitDialog(
+                    existingHabitNames = existingNames[currentScreen].orEmpty(),
+                    currentScreen = currentScreen,
+                    onDismiss = { showDialog = false },
+                    onConfirm = { habit ->
+                        coroutineScope.launch {
+                            habitDao.createHabit(habit)
                         }
-                    }
-                    showDialog = false
-                })
+                        showDialog = false
+                    })
+
+            Screen.GOALS ->
+                AddGoalDialog(
+                    existingGoalNames = existingNames[currentScreen].orEmpty(),
+                    currentScreen = currentScreen,
+                    onDismiss = { showDialog = false },
+                    onConfirm = { goal ->
+                        coroutineScope.launch {
+                            goalDao.createGoal(goal)
+                        }
+                        showDialog = false
+                    })
+
+            Screen.TODO ->
+                AddTaskDialog(
+                    existingTaskNames = existingNames[currentScreen].orEmpty(),
+                    currentScreen = currentScreen,
+                    onDismiss = { showDialog = false },
+                    onConfirm = { taskName ->
+                        coroutineScope.launch {
+                            todoDao.createTodo(taskName.trim())
+                        }
+                        showDialog = false
+                    })
+
         }
     }
 }
