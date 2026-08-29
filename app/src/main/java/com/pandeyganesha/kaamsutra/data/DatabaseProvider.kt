@@ -2,11 +2,6 @@ package com.pandeyganesha.kaamsutra.data
 
 import android.content.Context
 import androidx.room.Room
-import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_9_10
-import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_10_11
-import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_11_12
-import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_12_13
-import com.pandeyganesha.kaamsutra.data.migrations.MIGRATION_13_14
 
 
 object DatabaseProvider {
@@ -21,13 +16,7 @@ object DatabaseProvider {
                 AppDatabase::class.java,
                 "app_database"
             )
-                .addMigrations(
-                    MIGRATION_9_10,
-                    MIGRATION_10_11,
-                    MIGRATION_11_12,
-                    MIGRATION_12_13,
-                    MIGRATION_13_14
-                )
+                .fallbackToDestructiveMigration(true)
                 .build()
                 .also { instance = it }
         }

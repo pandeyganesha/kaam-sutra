@@ -15,7 +15,8 @@ import androidx.room.Update
 data class Goal(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
-    val sortOrder: Int,
+    val sortOrder: Int? = null,
+    val dueDate: Long? = null,
     val completed: Boolean = false,
     val status: Status = Status.ACTIVE,
     val createdAt: Long = System.currentTimeMillis(),
@@ -32,13 +33,8 @@ interface GoalDao {
     suspend fun insert(goal: Goal)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun createGoal(name: String) {
-        insert(
-            Goal(
-                name = name,
-                sortOrder = nextSortOrder()
-            )
-        )
+    suspend fun createGoal(goal: Goal) {
+        insert(goal.copy(sortOrder = nextSortOrder()))
     }
 
     @Update
