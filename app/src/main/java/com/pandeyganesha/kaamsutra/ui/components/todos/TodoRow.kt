@@ -1,4 +1,4 @@
-package com.pandeyganesha.kaamsutra.ui.components
+package com.pandeyganesha.kaamsutra.ui.components.todos
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -16,11 +16,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.text.style.TextDecoration
+import com.pandeyganesha.kaamsutra.data.Todo
 
 
 @Composable
-fun TaskRow(
-    taskName: String,
+fun TodoRow(
+    todo: Todo,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onEditClick: () -> Unit,
@@ -43,11 +44,11 @@ fun TaskRow(
                 .weight(1f)
                 .padding(horizontal = 8.dp)
         ) {
-            Text(text = taskName.trim(), textDecoration = if (isChecked) {
+            Text(text = todo.name.trim(), textDecoration = if (isChecked) {
                 TextDecoration.LineThrough }
-                else {
-                    TextDecoration.None
-                } )
+            else {
+                TextDecoration.None
+            } )
         }
         IconButton(onClick = onEditClick) {
             Icon(Icons.Default.Edit, contentDescription = "Edit")

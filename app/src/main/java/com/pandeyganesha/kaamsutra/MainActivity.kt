@@ -48,11 +48,12 @@ import com.pandeyganesha.kaamsutra.data.Goal
 import com.pandeyganesha.kaamsutra.data.Status
 import com.pandeyganesha.kaamsutra.data.Todo
 import com.pandeyganesha.kaamsutra.ui.components.goals.GoalScreen
-import com.pandeyganesha.kaamsutra.ui.components.TodoScreen
+import com.pandeyganesha.kaamsutra.ui.components.todos.TodoScreen
 import com.pandeyganesha.kaamsutra.ui.components.EmptyState
 import com.pandeyganesha.kaamsutra.ui.components.goals.AddGoalDialog
 import com.pandeyganesha.kaamsutra.ui.components.habits.AddHabitDialog
 import com.pandeyganesha.kaamsutra.ui.components.habits.RepeatType
+import com.pandeyganesha.kaamsutra.ui.components.todos.AddTodoDialog
 import java.time.DayOfWeek
 
 
@@ -355,17 +356,16 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     })
 
             Screen.TODO ->
-                AddTaskDialog(
-                    existingTaskNames = existingNames[currentScreen].orEmpty(),
+                AddTodoDialog(
+                    existingTodoNames = existingNames[currentScreen].orEmpty(),
                     currentScreen = currentScreen,
                     onDismiss = { showDialog = false },
-                    onConfirm = { taskName ->
+                    onConfirm = { todo ->
                         coroutineScope.launch {
-                            todoDao.createTodo(taskName.trim())
+                            todoDao.createTodo(todo)
                         }
                         showDialog = false
                     })
-
         }
     }
 }

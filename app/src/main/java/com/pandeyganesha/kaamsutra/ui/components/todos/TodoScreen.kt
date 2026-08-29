@@ -1,4 +1,4 @@
-package com.pandeyganesha.kaamsutra.ui.components
+package com.pandeyganesha.kaamsutra.ui.components.todos
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -43,8 +43,8 @@ fun TodoScreen(activeTodos: List<Todo>,
     LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
         items(todosNotDone, key = { it.id }) { todo ->
             ReorderableItem(reorderableState, key = todo.id) { isDragging ->
-                TaskRow(
-                    taskName = todo.name,
+                TodoRow(
+                    todo = todo,
                     isChecked = todo.completed,
                     onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                     onEditClick = { onEditClicked(todo) },
@@ -75,8 +75,8 @@ fun TodoScreen(activeTodos: List<Todo>,
                 )
             }
             items(todosDone, key = { it.id }) { todo ->
-                TaskRow(
-                    taskName = todo.name,
+                TodoRow(
+                    todo = todo,
                     isChecked = todo.completed,
                     onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                     onEditClick = { onEditClicked(todo) },

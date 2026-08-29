@@ -15,7 +15,7 @@ import androidx.room.Update
 data class Todo(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
-    val sortOrder: Int,
+    val sortOrder: Int? = null,
     val completed: Boolean = false,
     val status: Status = Status.ACTIVE,
     val createdAt: Long = System.currentTimeMillis(),
@@ -32,13 +32,8 @@ interface TodoDao {
     suspend fun insert(todo: Todo)
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun createTodo(name: String) {
-        insert(
-            Todo(
-                name = name,
-                sortOrder = nextSortOrder()
-            )
-        )
+    suspend fun createTodo(todo: Todo) {
+        insert(todo.copy(sortOrder = nextSortOrder()))
     }
 
     @Update
