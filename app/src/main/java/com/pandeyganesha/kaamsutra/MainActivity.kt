@@ -45,7 +45,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material.icons.filled.Add
 import com.pandeyganesha.kaamsutra.data.Goal
 import com.pandeyganesha.kaamsutra.data.Status
+import com.pandeyganesha.kaamsutra.data.Tag
 import com.pandeyganesha.kaamsutra.data.Todo
+import com.pandeyganesha.kaamsutra.data.TodoTag
 import com.pandeyganesha.kaamsutra.ui.components.goals.GoalScreen
 import com.pandeyganesha.kaamsutra.ui.components.todos.TodoScreen
 import com.pandeyganesha.kaamsutra.ui.components.EmptyState
@@ -109,6 +111,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val goalDao = db.goalDao()
     val habitLogDao = db.habitLogDao()
     val tagDao = db.tagDao()
+    val todoTagDao = db.todoTagDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
     val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
@@ -135,6 +138,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
     var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
     var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
     var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
+    var todoTagsBeingEdited by remember { mutableStateOf<List<Tag>>(emptyList()) }
     val today = LocalDate.now()
     val relevantPeriodDates = remember(today) {
         listOf(
@@ -228,13 +232,18 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
                     Screen.TODO -> TodoScreen(
                         activeTodos = activeTodos,
-                        tags =allTags,
+                        tags = allTags,
                         onCheckedChange = { checked, todo ->
                             coroutineScope.launch {
                                 todoDao.updateTodo(todo.copy(completed = checked))
                             }
                         },
-                        onEditClicked = { todo -> todoBeingEdited = todo },
+                        onEditClicked = { todo ->
+                            coroutineScope.launch {
+                                todoTagsBeingEdited = todoTagDao.getTagsForTodo(todo.id)
+                                todoBeingEdited = todo
+                            }
+                        },
                         onDeleteClicked = { todo -> todoBeingDeleted = todo },
                         onSortOrderUpdate = { reorderedList ->
                             scope.launch {
@@ -291,14 +300,19 @@ fun KaamSutraApp(screenToOpen: Screen) {
         AddTodoDialog(
             todo = todo,
             tags = allTags,
+            todoTags = todoTagsBeingEdited,
             existingTodoNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = {
                 todoBeingEdited = null
             },
-            onConfirm = { goalName ->
+            onConfirm = { updatedTodo, selectedTags ->
                 coroutineScope.launch {
-                    todoDao.updateTodo(todo)
+                    todoDao.updateTodo(updatedTodo)
+                    todoTagDao.deleteAllForTodo(updatedTodo.id)
+                    selectedTags.forEach { tag ->
+                        todoTagDao.insert(TodoTag(todoId = updatedTodo.id, tagId = tag.id))
+                    }
                     todoBeingEdited = null
                 }
             }
@@ -361,15 +375,20 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
             Screen.TODO ->
                 AddTodoDialog(
+                    tags = allTags,
                     existingTodoNames = existingNames[currentScreen].orEmpty(),
                     currentScreen = currentScreen,
                     onDismiss = { showDialog = false },
-                    onConfirm = { todo ->
+                    onConfirm = { todo, selectedTags ->
                         coroutineScope.launch {
                             todoDao.createTodo(todo)
+                            selectedTags.forEach { tag ->
+                                todoTagDao.insert(TodoTag(todoId = todo.id, tagId = tag.id))
+                            }
                         }
                         showDialog = false
-                    })
+                    }
+                )
         }
     }
 }

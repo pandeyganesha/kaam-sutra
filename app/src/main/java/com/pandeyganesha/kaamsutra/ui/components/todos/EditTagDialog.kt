@@ -39,7 +39,7 @@ fun EditTagDialog(
     tags: List<Tag> = emptyList(),
     onDismiss: () -> Unit,
     onConfirm: (createdTags: List<Tag>, deletedTags: List<Tag>) -> Unit,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     val editedTags = remember { mutableStateListOf<Tag>().apply { addAll(tags) } }
     val createdTags = remember { mutableStateListOf<Tag>() }
