@@ -3,6 +3,7 @@ package com.pandeyganesha.kaamsutra.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -11,8 +12,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Update
 
 
-@Entity(tableName = "goals")
-data class Tags(
+@Entity(tableName = "tags")
+data class Tag(
     @PrimaryKey val id: String = UUID.randomUUID().toString(),
     val name: String,
     val createdAt: Long = System.currentTimeMillis(),
@@ -22,10 +23,13 @@ data class Tags(
 @Dao
 interface TagDao {
 
-    @Insert
-    suspend fun insert(goal: Goal)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun createTag(tag: Tag)
 
-    @Update
-    suspend fun updateGoals(goals: List<Goal>)
+    @Delete
+    suspend fun deleteTag(tag: Tag)
+
+    @Query("SELECT * from tags")
+    fun getTags(): Flow<List<Tag>>
 
 }

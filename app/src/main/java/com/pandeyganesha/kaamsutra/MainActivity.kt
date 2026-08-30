@@ -18,7 +18,6 @@ import androidx.compose.runtime.collectAsState
 import com.pandeyganesha.kaamsutra.data.DatabaseProvider
 import com.pandeyganesha.kaamsutra.data.Habit
 import kotlinx.coroutines.launch
-import com.pandeyganesha.kaamsutra.ui.components.AddTaskDialog
 import com.pandeyganesha.kaamsutra.ui.components.DeleteTaskDialog
 import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.runtime.Composable
@@ -109,11 +108,14 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val habitDao = db.habitDao()
     val goalDao = db.goalDao()
     val habitLogDao = db.habitLogDao()
+    val tagDao = db.tagDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
     val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
+    val allTags by tagDao.getTags().collectAsState(initial = emptyList())
+
     val isEmptyMap = mapOf(
         Screen.HABITS to activeHabits.isEmpty(),
         Screen.GOALS to activeGoals.isEmpty(),
@@ -226,6 +228,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
                     Screen.TODO -> TodoScreen(
                         activeTodos = activeTodos,
+                        tags =allTags,
                         onCheckedChange = { checked, todo ->
                             coroutineScope.launch {
                                 todoDao.updateTodo(todo.copy(completed = checked))
@@ -285,16 +288,17 @@ fun KaamSutraApp(screenToOpen: Screen) {
         )
     }
     todoBeingEdited?.let { todo ->
-        AddTaskDialog(
-            taskName = todo.name,
-            existingTaskNames = existingNames[currentScreen].orEmpty() - todo.name,
+        AddTodoDialog(
+            todo = todo,
+            tags = allTags,
+            existingTodoNames = existingNames[currentScreen].orEmpty(),
             currentScreen = currentScreen,
             onDismiss = {
                 todoBeingEdited = null
             },
             onConfirm = { goalName ->
                 coroutineScope.launch {
-                    todoDao.updateTodo(todo.copy(name = goalName.trim()))
+                    todoDao.updateTodo(todo)
                     todoBeingEdited = null
                 }
             }
