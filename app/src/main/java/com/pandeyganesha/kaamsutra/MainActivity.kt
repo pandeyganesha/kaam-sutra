@@ -118,6 +118,10 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
     val allTags by tagDao.getTags().collectAsState(initial = emptyList())
+    val allTodoTagRows by todoTagDao.getAllTodoTags().collectAsState(initial = emptyList())
+    val todoTagsMap = remember(allTodoTagRows) {
+        allTodoTagRows.groupBy({ it.todoId }, { it.tag })
+    }
 
     val isEmptyMap = mapOf(
         Screen.HABITS to activeHabits.isEmpty(),
@@ -233,6 +237,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     Screen.TODO -> TodoScreen(
                         activeTodos = activeTodos,
                         tags = allTags,
+                        todoTagsMap = todoTagsMap,
                         onCheckedChange = { checked, todo ->
                             coroutineScope.launch {
                                 todoDao.updateTodo(todo.copy(completed = checked))

@@ -3,6 +3,7 @@ package com.pandeyganesha.kaamsutra.data
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow

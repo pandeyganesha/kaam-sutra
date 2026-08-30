@@ -2,12 +2,14 @@ package com.pandeyganesha.kaamsutra.data
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import kotlinx.coroutines.flow.Flow
 
 @Entity(
     tableName = "todo_tag",
@@ -33,6 +35,11 @@ data class TodoTag(
     val tagId: String
 )
 
+data class TodoTagRow(
+    val todoId: String,
+    @Embedded val tag: Tag
+)
+
 @Dao
 interface TodoTagDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
@@ -46,4 +53,7 @@ interface TodoTagDao {
 
     @Query("SELECT * FROM tags INNER JOIN todo_tag ON tags.id = todo_tag.tagId WHERE todo_tag.todoId = :todoId")
     suspend fun getTagsForTodo(todoId: String): List<Tag>
+
+    @Query("SELECT todo_tag.todoId as todoId, tags.* FROM tags INNER JOIN todo_tag ON tags.id = todo_tag.tagId")
+    fun getAllTodoTags(): Flow<List<TodoTagRow>>
 }

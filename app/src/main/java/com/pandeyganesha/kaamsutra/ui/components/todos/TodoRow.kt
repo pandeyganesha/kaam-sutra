@@ -15,13 +15,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.style.TextDecoration
+import com.pandeyganesha.kaamsutra.data.Tag
 import com.pandeyganesha.kaamsutra.data.Todo
 
 
 @Composable
 fun TodoRow(
     todo: Todo,
+    todoTags: List<Tag> = emptyList(),
+    showTags: Boolean = false,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onEditClick: () -> Unit,
@@ -29,26 +33,24 @@ fun TodoRow(
     modifier: Modifier = Modifier
 ){
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp),
+        modifier = modifier.fillMaxWidth().padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
-
     ){
-        Checkbox(
-            checked=isChecked,
-            onCheckedChange=onCheckedChange
-        )
+        Checkbox(checked = isChecked, onCheckedChange = onCheckedChange)
         Column(
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 8.dp)
+            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
         ) {
-            Text(text = todo.name.trim(), textDecoration = if (isChecked) {
-                TextDecoration.LineThrough }
-            else {
-                TextDecoration.None
-            } )
+            Text(
+                text = todo.name.trim(),
+                textDecoration = if (isChecked) TextDecoration.LineThrough else TextDecoration.None
+            )
+            if (showTags && todoTags.isNotEmpty()) {
+                Text(
+                    text = todoTags.joinToString(", ") { it.name },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
         IconButton(onClick = onEditClick) {
             Icon(Icons.Default.Edit, contentDescription = "Edit")
@@ -57,5 +59,4 @@ fun TodoRow(
             Icon(Icons.Default.Delete, contentDescription = "Delete")
         }
     }
-
 }

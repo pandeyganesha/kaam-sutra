@@ -44,13 +44,15 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun TodoScreen(activeTodos: List<Todo>,
-               tags: List<Tag> = emptyList(),
-               onCheckedChange: (Boolean, Todo) -> Unit,
-               onEditClicked: (Todo) -> Unit,
-               onDeleteClicked: (Todo) -> Unit,
-               onSortOrderUpdate: (List<Todo>) -> Unit,
-               modifier: Modifier
+fun TodoScreen(
+    activeTodos: List<Todo>,
+    tags: List<Tag> = emptyList(),
+    todoTagsMap: Map<String, List<Tag>> = emptyMap(),
+    onCheckedChange: (Boolean, Todo) -> Unit,
+    onEditClicked: (Todo) -> Unit,
+    onDeleteClicked: (Todo) -> Unit,
+    onSortOrderUpdate: (List<Todo>) -> Unit,
+    modifier: Modifier
 ) {
     val context = LocalContext.current
     val db = DatabaseProvider.getDatabase(context.applicationContext)
@@ -58,16 +60,21 @@ fun TodoScreen(activeTodos: List<Todo>,
     val coroutineScope = rememberCoroutineScope()
 
 
-    val all = Tag(name="All")
+    val all = remember { Tag(id = "ALL_TAG_ID", name = "All") }
     val tagsWithAll = listOf(all) + tags
     var selected by remember {mutableStateOf( all)}
     var showTagInputField by remember { mutableStateOf(false) }
     val lazyListState = rememberLazyListState()
 
-    var todosNotDone by remember(activeTodos) {
-        mutableStateOf(activeTodos.filter { !it.completed })
+    val filteredTodos = remember(activeTodos, selected, todoTagsMap) {
+        if (selected == all) activeTodos
+        else activeTodos.filter { todo -> todoTagsMap[todo.id]?.contains(selected) == true }
     }
-    val todosDone = activeTodos.filter { it.completed }
+
+    var todosNotDone by remember(filteredTodos) {
+        mutableStateOf(filteredTodos.filter { !it.completed })
+    }
+    val todosDone = filteredTodos.filter { it.completed }
 
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         todosNotDone = todosNotDone.toMutableList().apply {
@@ -111,6 +118,8 @@ fun TodoScreen(activeTodos: List<Todo>,
                 ReorderableItem(reorderableState, key = todo.id) { isDragging ->
                     TodoRow(
                         todo = todo,
+                        todoTags = todoTagsMap[todo.id] ?: emptyList(),
+                        showTags = selected == all,
                         isChecked = todo.completed,
                         onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                         onEditClick = { onEditClicked(todo) },
@@ -143,6 +152,8 @@ fun TodoScreen(activeTodos: List<Todo>,
                 items(todosDone, key = { it.id }) { todo ->
                     TodoRow(
                         todo = todo,
+                        todoTags = todoTagsMap[todo.id] ?: emptyList(),
+                        showTags = selected == all,
                         isChecked = todo.completed,
                         onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                         onEditClick = { onEditClicked(todo) },
