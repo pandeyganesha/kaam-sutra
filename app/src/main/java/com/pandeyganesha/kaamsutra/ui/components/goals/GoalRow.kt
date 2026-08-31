@@ -1,5 +1,6 @@
 package com.pandeyganesha.kaamsutra.ui.components.goals
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 import com.pandeyganesha.kaamsutra.data.Goal
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontStyle
 import java.util.Locale
 import java.text.SimpleDateFormat
@@ -37,14 +39,15 @@ fun GoalRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .pointerInput(isChecked) {
+                detectTapGestures(
+                    onDoubleTap = { onCheckedChange(!isChecked) }
+                )
+            },
         verticalAlignment = Alignment.CenterVertically
 
     ){
-        Checkbox(
-            checked=isChecked,
-            onCheckedChange=onCheckedChange
-        )
         Column(
             modifier = Modifier
                 .weight(1f)
