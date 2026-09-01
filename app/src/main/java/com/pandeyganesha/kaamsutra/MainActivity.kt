@@ -283,7 +283,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             },
             onConfirm = { habit ->
                 coroutineScope.launch {
-                    habitDao.updateHabit(habit)
+                    habitDao.updateHabit(habit.copy(name = habit.name.replaceFirstChar { it.uppercase() }))
                     habitBeingEdited = null
                 }
             }
@@ -313,7 +313,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             },
             onConfirm = { updatedTodo, selectedTags ->
                 coroutineScope.launch {
-                    todoDao.updateTodo(updatedTodo)
+                    todoDao.updateTodo(updatedTodo.copy(name = updatedTodo.name.replaceFirstChar { it.uppercase() }))
                     todoTagDao.deleteAllForTodo(updatedTodo.id)
                     selectedTags.forEach { tag ->
                         todoTagDao.insert(TodoTag(todoId = updatedTodo.id, tagId = tag.id))
@@ -346,7 +346,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             },
             onConfirm = { goalName ->
                 coroutineScope.launch {
-                    goalDao.updateGoal(goal)
+                    goalDao.updateGoal(goal.copy(name = goal.name.replaceFirstChar { it.uppercase() }))
                     goalBeingEdited = null
                 }
             }
@@ -361,7 +361,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     onDismiss = { showDialog = false },
                     onConfirm = { habit ->
                         coroutineScope.launch {
-                            habitDao.createHabit(habit)
+                            habitDao.createHabit(habit.copy(name = habit.name.replaceFirstChar { it.uppercase() }))
                         }
                         showDialog = false
                     })
@@ -373,7 +373,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     onDismiss = { showDialog = false },
                     onConfirm = { goal ->
                         coroutineScope.launch {
-                            goalDao.createGoal(goal)
+                            goalDao.createGoal(goal.copy(name = goal.name.replaceFirstChar { it.uppercase() }))
                         }
                         showDialog = false
                     })
@@ -386,7 +386,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     onDismiss = { showDialog = false },
                     onConfirm = { todo, selectedTags ->
                         coroutineScope.launch {
-                            todoDao.createTodo(todo)
+                            todoDao.createTodo(todo.copy(name = todo.name.replaceFirstChar { it.uppercase() }))
                             selectedTags.forEach { tag ->
                                 todoTagDao.insert(TodoTag(todoId = todo.id, tagId = tag.id))
                             }

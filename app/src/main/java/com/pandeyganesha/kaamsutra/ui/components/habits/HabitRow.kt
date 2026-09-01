@@ -1,5 +1,6 @@
 package com.pandeyganesha.kaamsutra.ui.components.habits
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -20,6 +21,7 @@ import com.pandeyganesha.kaamsutra.data.Habit
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 
 
 @Composable
@@ -35,14 +37,15 @@ fun HabitRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
+            .pointerInput(isChecked) {
+                detectTapGestures(
+                    onDoubleTap = { onCheckedChange(!isChecked) }
+                )
+            },
         verticalAlignment = Alignment.CenterVertically
 
     ){
-        Checkbox(
-            checked=isChecked,
-            onCheckedChange=onCheckedChange
-        )
         Column(
             modifier = Modifier
                 .weight(1f)

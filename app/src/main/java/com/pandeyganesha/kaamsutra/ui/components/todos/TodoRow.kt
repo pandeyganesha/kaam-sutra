@@ -1,5 +1,6 @@
 package com.pandeyganesha.kaamsutra.ui.components.todos
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextDecoration
 import com.pandeyganesha.kaamsutra.data.Tag
 import com.pandeyganesha.kaamsutra.data.Todo
@@ -31,12 +33,18 @@ fun TodoRow(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
-){
+) {
     Row(
-        modifier = modifier.fillMaxWidth().padding(8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .pointerInput(isChecked) {
+                detectTapGestures(
+                    onDoubleTap = { onCheckedChange(!isChecked) }
+                )
+            },
         verticalAlignment = Alignment.CenterVertically
-    ){
-        Checkbox(checked = isChecked, onCheckedChange = onCheckedChange)
+    ) {
         Column(
             modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
         ) {
