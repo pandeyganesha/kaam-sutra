@@ -16,7 +16,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.pandeyganesha.kaamsutra.MainActivity
-import com.pandeyganesha.kaamsutra.ui.components.Screen
+import com.pandeyganesha.kaamsutra.Screen
 import java.time.LocalDate
 import java.util.concurrent.TimeUnit
 

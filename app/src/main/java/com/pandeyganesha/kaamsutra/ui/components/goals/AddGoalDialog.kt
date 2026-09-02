@@ -17,12 +17,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.pandeyganesha.kaamsutra.data.Goal
-import com.pandeyganesha.kaamsutra.ui.components.Screen
 import com.pandeyganesha.kaamsutra.ui.components.utils.DatePickerField
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
-
+import com.pandeyganesha.kaamsutra.Screen
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 
 @Composable
 fun AddGoalDialog(
@@ -33,38 +34,40 @@ fun AddGoalDialog(
     onConfirm: (goal: Goal) -> Unit,
 ) {
     val existingGoalNamesExcludingItself = existingGoalNames - goal?.name
-    var goalNameText by remember { mutableStateOf(goal?.name ?: "") }
-    val isDuplicate = goalNameText in existingGoalNamesExcludingItself
+    var goalNameField by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = goal?.name ?: "",
+                selection = TextRange(goal?.name?.length ?: 0)
+            )
+        )
+    }
+    val isDuplicate = goalNameField.text in existingGoalNamesExcludingItself
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     var pickedDate by remember { mutableStateOf(goal?.dueDate) }
-
-
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Add ${currentScreen.singular}")},
         text = {
             Column {
                 OutlinedTextField(
-                    value = goalNameText,
-                    onValueChange = { goalNameText = it },
+                    value = goalNameField,
+                    onValueChange = { goalNameField = it },
                     label = {Text("Enter ${currentScreen.singular}")},
                     modifier = Modifier.focusRequester(focusRequester)
                 )
                 Spacer(modifier = Modifier.height(18.dp))
-
                 DatePickerField(
                     defaultDate = pickedDate,
                     onDateSelected = { date ->
                         pickedDate = date
                     }
                 )
-
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                     keyboard?.show()
                 }
-
                 if (isDuplicate) {
                     Text(
                         text = "${currentScreen.singular} already exists",
@@ -74,19 +77,18 @@ fun AddGoalDialog(
             }
         },
         confirmButton = {
-
             TextButton(onClick = {
                 onConfirm(
                     goal?.copy(
-                        name = goalNameText,
+                        name = goalNameField.text,
                         dueDate = pickedDate
                     ) ?: Goal(
-                        name = goalNameText,
+                        name = goalNameField.text,
                         dueDate = pickedDate
                     )
                 )
             },
-                enabled = !isDuplicate && goalNameText.isNotBlank()
+                enabled = !isDuplicate && goalNameField.text.isNotBlank()
             ) {
                 Text("Confirm")
             }

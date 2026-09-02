@@ -8,14 +8,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.text.style.TextDecoration
 import com.pandeyganesha.kaamsutra.data.Habit
 import androidx.compose.ui.text.font.FontStyle
@@ -40,7 +38,8 @@ fun HabitRow(
             .padding(8.dp)
             .pointerInput(isChecked) {
                 detectTapGestures(
-                    onDoubleTap = { onCheckedChange(!isChecked) }
+                    onDoubleTap = { onCheckedChange(!isChecked) },
+                    onTap = {onEditClick()}
                 )
             },
         verticalAlignment = Alignment.CenterVertically
@@ -68,9 +67,6 @@ fun HabitRow(
                     color = Color(0xFFB8B8B8)
                 )
             }
-        }
-        IconButton(onClick = onEditClick) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit")
         }
         IconButton(onClick = onDeleteClick) {
             Icon(Icons.Default.Delete, contentDescription = "Delete")

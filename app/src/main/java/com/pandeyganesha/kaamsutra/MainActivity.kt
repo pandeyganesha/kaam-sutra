@@ -19,7 +19,6 @@ import com.pandeyganesha.kaamsutra.data.DatabaseProvider
 import com.pandeyganesha.kaamsutra.data.Habit
 import kotlinx.coroutines.launch
 import com.pandeyganesha.kaamsutra.ui.components.DeleteTaskDialog
-import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import java.time.LocalDate
@@ -37,7 +36,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.FloatingActionButton
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
-import com.pandeyganesha.kaamsutra.ui.components.AppBottomBar
 import com.pandeyganesha.kaamsutra.ui.components.AppTopBar
 import com.pandeyganesha.kaamsutra.ui.components.habits.HabitScreen
 import androidx.compose.material.icons.Icons
@@ -85,6 +83,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+enum class Screen(val singular: String, val plural: String) {
+    //    HOME("Home"),
+    HABITS("Habit", "Habits"),
+    GOALS("Goal", "Goals"),
+    TODO("ToDo", "Todo" )
+}
+
 fun periodStartDateFor(habit: Habit, date: LocalDate): LocalDate {
     return when (habit.repeatType) {
         RepeatType.DAILY -> date
@@ -99,7 +104,7 @@ fun periodStartDateFor(habit: Habit, date: LocalDate): LocalDate {
 fun KaamSutraApp(screenToOpen: Screen) {
 
     val pagerState = rememberPagerState(
-        initialPage = Screen.HABITS.ordinal,
+        initialPage = Screen.GOALS.ordinal,
         pageCount = { Screen.entries.size}
     )
     val scope = rememberCoroutineScope()
@@ -168,16 +173,6 @@ fun KaamSutraApp(screenToOpen: Screen) {
             AppTopBar(
                 title = currentScreen.plural,
                 modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
-            )
-        },
-        bottomBar = {
-            AppBottomBar(
-                currentScreen = currentScreen,
-                onScreenSelected = { scope.launch {
-                    pagerState.animateScrollToPage(
-                        it.ordinal
-                    )
-                }},
             )
         },
     ) { innerPadding ->
