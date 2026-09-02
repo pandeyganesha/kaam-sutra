@@ -40,7 +40,8 @@ fun TodoRow(
             .padding(8.dp)
             .pointerInput(isChecked) {
                 detectTapGestures(
-                    onDoubleTap = { onCheckedChange(!isChecked) }
+                    onDoubleTap = { onCheckedChange(!isChecked) },
+                    onTap = { onEditClick() }
                 )
             },
         verticalAlignment = Alignment.CenterVertically
@@ -60,9 +61,7 @@ fun TodoRow(
                 )
             }
         }
-        IconButton(onClick = onEditClick) {
-            Icon(Icons.Default.Edit, contentDescription = "Edit")
-        }
+
         IconButton(onClick = onDeleteClick) {
             Icon(Icons.Default.Delete, contentDescription = "Delete")
         }

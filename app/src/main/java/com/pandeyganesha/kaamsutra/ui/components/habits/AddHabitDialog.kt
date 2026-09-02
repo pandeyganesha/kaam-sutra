@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.ui.unit.dp
+import com.pandeyganesha.kaamsutra.Screen
 import com.pandeyganesha.kaamsutra.data.Habit
 
 enum class RepeatType(val displayName: String) {

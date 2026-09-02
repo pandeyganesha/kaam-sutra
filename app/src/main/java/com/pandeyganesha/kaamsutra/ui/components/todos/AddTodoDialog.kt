@@ -16,11 +16,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.InputChip
-import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
@@ -28,8 +24,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.pandeyganesha.kaamsutra.data.Todo
-import com.pandeyganesha.kaamsutra.ui.components.Screen
 import androidx.compose.ui.unit.dp
+import com.pandeyganesha.kaamsutra.Screen
 import com.pandeyganesha.kaamsutra.data.Tag
 
 
