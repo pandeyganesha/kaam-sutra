@@ -1,6 +1,5 @@
 package com.pandeyganesha.kaamsutra.ui.components.todos
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.graphics.Color
@@ -27,6 +26,8 @@ import com.pandeyganesha.kaamsutra.data.Todo
 import androidx.compose.ui.unit.dp
 import com.pandeyganesha.kaamsutra.Screen
 import com.pandeyganesha.kaamsutra.data.Tag
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 
 
 @Composable
@@ -40,8 +41,15 @@ fun AddTodoDialog(
     onConfirm: (todo: Todo, selectedTags: List<Tag>) -> Unit,
 ) {
 
-    var todoNameText by remember { mutableStateOf(todo?.name ?: "") }
-    val isDuplicate = todoNameText in existingTodoNames - todo?.name
+    var todoNameField by remember {
+        mutableStateOf(
+            TextFieldValue(
+                text = todo?.name ?: "",
+                selection = TextRange(todo?.name?.length ?: 0)
+            )
+        )
+    }
+    val isDuplicate = todoNameField.text in existingTodoNames - todo?.name
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     var selectedTags by remember { mutableStateOf(todoTags) }
@@ -52,8 +60,8 @@ fun AddTodoDialog(
         text = {
             Column {
                 OutlinedTextField(
-                    value = todoNameText,
-                    onValueChange = { todoNameText = it },
+                    value = todoNameField,
+                    onValueChange = { todoNameField = it },
                     label = { Text("Enter ${currentScreen.singular}") },
                     modifier = Modifier.focusRequester(focusRequester)
                 )
@@ -99,11 +107,11 @@ fun AddTodoDialog(
 
             TextButton(onClick = {
                 onConfirm(
-                    todo?.copy(name = todoNameText) ?: Todo(name = todoNameText),
+                    todo?.copy(name = todoNameField.text) ?: Todo(name = todoNameField.text),
                     selectedTags
                 )
             },
-                enabled = !isDuplicate && todoNameText.isNotBlank()
+                enabled = !isDuplicate && todoNameField.text.isNotBlank()
             ) {
                 Text("Confirm")
             }

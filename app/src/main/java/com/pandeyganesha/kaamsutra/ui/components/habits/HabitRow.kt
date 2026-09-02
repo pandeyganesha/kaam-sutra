@@ -14,7 +14,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.text.style.TextDecoration
 import com.pandeyganesha.kaamsutra.data.Habit
 import androidx.compose.ui.text.font.FontStyle
