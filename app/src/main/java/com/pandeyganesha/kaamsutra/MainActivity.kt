@@ -110,45 +110,30 @@ fun KaamSutraApp(screenToOpen: Screen) {
     val db = (LocalContext.current.applicationContext as MyApp).db
     val scope = rememberCoroutineScope()
 
-    val habitDao = db.habitDao()
+
     val goalDao = db.goalDao()
-    val habitLogDao = db.habitLogDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
-    val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
 
     val isEmptyMap = mapOf(
-        Screen.HABITS to activeHabits.isEmpty(),
         Screen.GOALS to activeGoals.isEmpty()
     )
-    val existingNames = remember(activeHabits, activeGoals) {
+    val existingNames = remember(activeGoals) {
         mapOf(
-            Screen.HABITS to activeHabits.map { it.name }.toSet(),
             Screen.GOALS to activeGoals.map { it.name }.toSet()
         )
     }
     var showDialog by remember { mutableStateOf(false) }
     var goalBeingEdited by remember { mutableStateOf<Goal?>(null) }
     var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
-    var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
-    var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
-    val today = LocalDate.now()
-    val relevantPeriodDates = remember(today) {
-        listOf(
-            today.toString(),
-            today.with(DayOfWeek.MONDAY).toString(),
-            today.withDayOfMonth(1).toString(),
-            today.withDayOfYear(1).toString()
-        )
-    }
-    val allHabitLogsForCurrentPeriods by habitLogDao.getLogsForDates(relevantPeriodDates)
-        .collectAsState(initial = emptyList())
+
+
 
 
     Scaffold(
         floatingActionButton = {
-            if (currentScreen != Screen.TODO) {
+            if (currentScreen == Screen.GOALS) {
                 FloatingActionButton(
                     onClick = { showDialog = true }) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
@@ -174,31 +159,8 @@ fun KaamSutraApp(screenToOpen: Screen) {
             else {
                 when (Screen.entries[page]) {
                     Screen.HABITS -> {
-                        HabitScreen(
-                            activeHabits = activeHabits,
-                            allHabitLogsForCurrentPeriods = allHabitLogsForCurrentPeriods,
-                            onCheckedChange = { checked, habit ->
-                                coroutineScope.launch {
-                                    habitLogDao.upsertLog(
-                                        HabitLog(
-                                            habitId = habit.id,
-                                            habitDate = periodStartDateFor(habit, LocalDate.now()).toString(),
-                                            completed = checked
-                                        )
-                                    )
-                                }
-                            },
-                            onEditClicked = { habit -> habitBeingEdited = habit },
-                            onDeleteClicked = { habit -> habitBeingDeleted = habit },
-                            onSortOrderUpdate = { reorderedList ->
-                                scope.launch {
-                                    db.habitDao().updateHabits(reorderedList)
-                                }
-                            },
-                            modifier = Modifier.padding(innerPadding)
-                        )
+                        HabitScreen(modifier = Modifier.padding(innerPadding))
                     }
-
                     Screen.GOALS -> GoalScreen(
                         activeGoals = activeGoals,
                         onCheckedChange = { checked, goal ->
@@ -223,34 +185,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
             }
     }
     }
-    habitBeingDeleted?.let { habit ->
-        DeleteTaskDialog(
-            taskName = habit.name,
-            onDismiss = { habitBeingDeleted = null },
-            onConfirm = {
-                coroutineScope.launch {
-                    habitDao.softDeleteHabit(habit.id)
-                    habitBeingDeleted = null
-                }
-            }
-        )
-    }
-    habitBeingEdited?.let { habit ->
-        AddHabitDialog (
-            habit = habit,
-            existingHabitNames = existingNames[currentScreen].orEmpty(),
-            currentScreen = currentScreen,
-            onDismiss = {
-                habitBeingEdited = null
-            },
-            onConfirm = { habit ->
-                coroutineScope.launch {
-                    habitDao.updateHabit(habit.copy(name = habit.name.replaceFirstChar { it.uppercase() }))
-                    habitBeingEdited = null
-                }
-            }
-        )
-    }
+
 
     goalBeingDeleted?.let { goal ->
         DeleteTaskDialog(
@@ -282,18 +217,6 @@ fun KaamSutraApp(screenToOpen: Screen) {
     }
     if (showDialog) {
         when (currentScreen) {
-            Screen.HABITS ->
-                AddHabitDialog(
-                    existingHabitNames = existingNames[currentScreen].orEmpty(),
-                    currentScreen = currentScreen,
-                    onDismiss = { showDialog = false },
-                    onConfirm = { habit ->
-                        coroutineScope.launch {
-                            habitDao.createHabit(habit.copy(name = habit.name.replaceFirstChar { it.uppercase() }))
-                        }
-                        showDialog = false
-                    })
-
             Screen.GOALS ->
                 AddGoalDialog(
                     existingGoalNames = existingNames[currentScreen].orEmpty(),
