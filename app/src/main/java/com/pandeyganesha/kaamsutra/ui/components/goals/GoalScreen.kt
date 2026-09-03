@@ -17,7 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import sh.calvin.reorderable.ReorderableItem
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import com.pandeyganesha.kaamsutra.ui.components.CollapsibleSectionHeader
 
 
 @Composable
@@ -33,6 +33,7 @@ fun GoalScreen(activeGoals: List<Goal>,
         mutableStateOf(activeGoals.filter { !it.completed })
     }
     val goalsDone = activeGoals.filter { it.completed }
+    var doneExpanded by remember { mutableStateOf(false) }
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         goalsNotDone = goalsNotDone.toMutableList().apply {
             add(to.index, removeAt(from.index))
@@ -64,24 +65,22 @@ fun GoalScreen(activeGoals: List<Goal>,
         }
         if (goalsDone.isNotEmpty()) {
             item {
-                Text(
-                    "Done",
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 28.dp,
-                        bottom = 8.dp
-                    )
+                CollapsibleSectionHeader(
+                    title = "Done",
+                    expanded = doneExpanded,
+                    onToggle = { doneExpanded = !doneExpanded }
                 )
             }
-            items(goalsDone, key = { it.id }) { goal ->
-                GoalRow(
-                    goal = goal,
-                    isChecked = goal.completed,
-                    onCheckedChange = { checked -> onCheckedChange(checked, goal) },
-                    onEditClick = { onEditClicked(goal) },
-                    onDeleteClick = { onDeleteClicked(goal) }
-                )
+            if (doneExpanded) {
+                items(goalsDone, key = { it.id }) { goal ->
+                    GoalRow(
+                        goal = goal,
+                        isChecked = goal.completed,
+                        onCheckedChange = { checked -> onCheckedChange(checked, goal) },
+                        onEditClick = { onEditClicked(goal) },
+                        onDeleteClick = { onDeleteClicked(goal) }
+                    )
+                }
             }
             item {
                 Spacer(modifier = Modifier.height(75.dp))
