@@ -40,6 +40,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import com.pandeyganesha.kaamsutra.data.DatabaseProvider
 import com.pandeyganesha.kaamsutra.data.Tag
+import com.pandeyganesha.kaamsutra.ui.components.CollapsibleSectionHeader
 import kotlinx.coroutines.launch
 
 
@@ -75,6 +76,7 @@ fun TodoScreen(
         mutableStateOf(filteredTodos.filter { !it.completed })
     }
     val todosDone = filteredTodos.filter { it.completed }
+    var doneExpanded by remember { mutableStateOf(false) }
 
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
         todosNotDone = todosNotDone.toMutableList().apply {
@@ -139,26 +141,24 @@ fun TodoScreen(
             }
             if (todosDone.isNotEmpty()) {
                 item {
-                    Text(
-                        "Done",
-                        modifier = Modifier.padding(
-                            start = 16.dp,
-                            end = 16.dp,
-                            top = 28.dp,
-                            bottom = 8.dp
-                        )
+                    CollapsibleSectionHeader(
+                        title = "Done",
+                        expanded = doneExpanded,
+                        onToggle = { doneExpanded = !doneExpanded }
                     )
                 }
-                items(todosDone, key = { it.id }) { todo ->
-                    TodoRow(
-                        todo = todo,
-                        todoTags = todoTagsMap[todo.id] ?: emptyList(),
-                        showTags = selected == all,
-                        isChecked = todo.completed,
-                        onCheckedChange = { checked -> onCheckedChange(checked, todo) },
-                        onEditClick = { onEditClicked(todo) },
-                        onDeleteClick = { onDeleteClicked(todo) }
-                    )
+                if (doneExpanded) {
+                    items(todosDone, key = { it.id }) { todo ->
+                        TodoRow(
+                            todo = todo,
+                            todoTags = todoTagsMap[todo.id] ?: emptyList(),
+                            showTags = selected == all,
+                            isChecked = todo.completed,
+                            onCheckedChange = { checked -> onCheckedChange(checked, todo) },
+                            onEditClick = { onEditClicked(todo) },
+                            onDeleteClick = { onDeleteClicked(todo) }
+                        )
+                    }
                 }
                 item {
                     Spacer(modifier = Modifier.height(75.dp))
