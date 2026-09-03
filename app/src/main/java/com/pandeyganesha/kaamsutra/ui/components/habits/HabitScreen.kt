@@ -28,6 +28,8 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.geometry.Offset
+import com.pandeyganesha.kaamsutra.periodStartDateFor
+import java.time.LocalDate
 
 
 enum class RepeatTypeChip(val displayName: String) {
@@ -90,7 +92,10 @@ fun HabitScreen(activeHabits: List<Habit>,
                     HabitRow(
                         habit = habit,
                         showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
-                        isChecked = allHabitLogsForCurrentPeriods.any { it.habitId == habit.id && it.completed },
+                        isChecked = allHabitLogsForCurrentPeriods.any {
+                            it.habitId == habit.id && it.completed &&
+                                it.habitDate == periodStartDateFor(habit, LocalDate.now()).toString()
+                        },
                         onCheckedChange = { checked -> onCheckedChange(checked, habit) },
                         onEditClick = { onEditClicked(habit) },
                         onDeleteClick = { onDeleteClicked(habit) },
