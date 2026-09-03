@@ -107,47 +107,32 @@ fun KaamSutraApp(screenToOpen: Screen) {
         initialPage = Screen.GOALS.ordinal,
         pageCount = { Screen.entries.size}
     )
+    val db = (LocalContext.current.applicationContext as MyApp).db
     val scope = rememberCoroutineScope()
 
-    val context = LocalContext.current
-    val db = DatabaseProvider.getDatabase(context.applicationContext)
-    val todoDao = db.todoDao()
     val habitDao = db.habitDao()
     val goalDao = db.goalDao()
     val habitLogDao = db.habitLogDao()
-    val tagDao = db.tagDao()
-    val todoTagDao = db.todoTagDao()
     val coroutineScope = rememberCoroutineScope()
     val currentScreen = Screen.entries[pagerState.currentPage]
     val activeHabits by habitDao.getHabits(Status.ACTIVE).collectAsState(initial = emptyList())
     val activeGoals by goalDao.getGoals(Status.ACTIVE).collectAsState(initial = emptyList())
-    val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
-    val allTags by tagDao.getTags().collectAsState(initial = emptyList())
-    val allTodoTagRows by todoTagDao.getAllTodoTags().collectAsState(initial = emptyList())
-    val todoTagsMap = remember(allTodoTagRows) {
-        allTodoTagRows.groupBy({ it.todoId }, { it.tag })
-    }
 
     val isEmptyMap = mapOf(
         Screen.HABITS to activeHabits.isEmpty(),
-        Screen.GOALS to activeGoals.isEmpty(),
-        Screen.TODO to activeTodos.isEmpty()
+        Screen.GOALS to activeGoals.isEmpty()
     )
-    val existingNames = remember(activeHabits, activeGoals, activeTodos) {
+    val existingNames = remember(activeHabits, activeGoals) {
         mapOf(
             Screen.HABITS to activeHabits.map { it.name }.toSet(),
-            Screen.GOALS to activeGoals.map { it.name }.toSet(),
-            Screen.TODO to activeTodos.map { it.name }.toSet()
+            Screen.GOALS to activeGoals.map { it.name }.toSet()
         )
     }
     var showDialog by remember { mutableStateOf(false) }
-    var todoBeingEdited by remember { mutableStateOf<Todo?>(null) }
-    var todoBeingDeleted by remember { mutableStateOf<Todo?>(null) }
     var goalBeingEdited by remember { mutableStateOf<Goal?>(null) }
     var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
     var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
     var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
-    var todoTagsBeingEdited by remember { mutableStateOf<List<Tag>>(emptyList()) }
     val today = LocalDate.now()
     val relevantPeriodDates = remember(today) {
         listOf(
@@ -163,9 +148,11 @@ fun KaamSutraApp(screenToOpen: Screen) {
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showDialog = true }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+            if (currentScreen != Screen.TODO) {
+                FloatingActionButton(
+                    onClick = { showDialog = true }) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
             }
 
         },
@@ -230,26 +217,6 @@ fun KaamSutraApp(screenToOpen: Screen) {
                     )
 
                     Screen.TODO -> TodoScreen(
-                        activeTodos = activeTodos,
-                        tags = allTags,
-                        todoTagsMap = todoTagsMap,
-                        onCheckedChange = { checked, todo ->
-                            coroutineScope.launch {
-                                todoDao.updateTodo(todo.copy(completed = checked))
-                            }
-                        },
-                        onEditClicked = { todo ->
-                            coroutineScope.launch {
-                                todoTagsBeingEdited = todoTagDao.getTagsForTodo(todo.id)
-                                todoBeingEdited = todo
-                            }
-                        },
-                        onDeleteClicked = { todo -> todoBeingDeleted = todo },
-                        onSortOrderUpdate = { reorderedList ->
-                            scope.launch {
-                                db.todoDao().updateTodos(reorderedList)
-                            }
-                        },
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -280,40 +247,6 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 coroutineScope.launch {
                     habitDao.updateHabit(habit.copy(name = habit.name.replaceFirstChar { it.uppercase() }))
                     habitBeingEdited = null
-                }
-            }
-        )
-    }
-    todoBeingDeleted?.let { todo ->
-        DeleteTaskDialog(
-            taskName = todo.name,
-            onDismiss = { todoBeingDeleted = null },
-            onConfirm = {
-                coroutineScope.launch {
-                    todoDao.softDeleteTodo(todo.id)
-                    todoBeingDeleted = null
-                }
-            }
-        )
-    }
-    todoBeingEdited?.let { todo ->
-        AddTodoDialog(
-            todo = todo,
-            tags = allTags,
-            todoTags = todoTagsBeingEdited,
-            existingTodoNames = existingNames[currentScreen].orEmpty(),
-            currentScreen = currentScreen,
-            onDismiss = {
-                todoBeingEdited = null
-            },
-            onConfirm = { updatedTodo, selectedTags ->
-                coroutineScope.launch {
-                    todoDao.updateTodo(updatedTodo.copy(name = updatedTodo.name.replaceFirstChar { it.uppercase() }))
-                    todoTagDao.deleteAllForTodo(updatedTodo.id)
-                    selectedTags.forEach { tag ->
-                        todoTagDao.insert(TodoTag(todoId = updatedTodo.id, tagId = tag.id))
-                    }
-                    todoBeingEdited = null
                 }
             }
         )
@@ -372,23 +305,7 @@ fun KaamSutraApp(screenToOpen: Screen) {
                         }
                         showDialog = false
                     })
-
-            Screen.TODO ->
-                AddTodoDialog(
-                    tags = allTags,
-                    existingTodoNames = existingNames[currentScreen].orEmpty(),
-                    currentScreen = currentScreen,
-                    onDismiss = { showDialog = false },
-                    onConfirm = { todo, selectedTags ->
-                        coroutineScope.launch {
-                            todoDao.createTodo(todo.copy(name = todo.name.replaceFirstChar { it.uppercase() }))
-                            selectedTags.forEach { tag ->
-                                todoTagDao.insert(TodoTag(todoId = todo.id, tagId = tag.id))
-                            }
-                        }
-                        showDialog = false
-                    }
-                )
+            else -> {}
         }
     }
 }

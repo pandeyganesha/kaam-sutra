@@ -36,7 +36,6 @@ fun AddTodoDialog(
     todoTags: List<Tag> = emptyList(),
     tags: List<Tag> = emptyList(),
     existingTodoNames: Set<String>,
-    currentScreen: Screen,
     onDismiss: () -> Unit,
     onConfirm: (todo: Todo, selectedTags: List<Tag>) -> Unit,
 ) {
@@ -56,13 +55,13 @@ fun AddTodoDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add ${currentScreen.singular}")},
+        title = { Text("Add ${Screen.TODO.singular}")},
         text = {
             Column {
                 OutlinedTextField(
                     value = todoNameField,
                     onValueChange = { todoNameField = it },
-                    label = { Text("Enter ${currentScreen.singular}") },
+                    label = { Text("Enter ${Screen.TODO.singular}") },
                     modifier = Modifier.focusRequester(focusRequester)
                 )
                 LaunchedEffect(Unit) {
@@ -96,7 +95,7 @@ fun AddTodoDialog(
                 }
                 if (isDuplicate) {
                     Text(
-                        text = "${currentScreen.singular} already exists",
+                        text = "${Screen.TODO.singular} already exists",
                         color = Color.Red
                     )
                 }
