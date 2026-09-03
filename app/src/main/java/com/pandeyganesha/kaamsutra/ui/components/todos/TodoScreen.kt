@@ -208,6 +208,7 @@ fun TodoScreen(
     if (showDialog) {
         AddTodoDialog(
             tags = tags,
+            todoTags = if (selected!= all) listOf(selected) else emptyList(),
             existingTodoNames = existingTodos,
             onDismiss = { showDialog = false },
             onConfirm = { todo, selectedTags ->
