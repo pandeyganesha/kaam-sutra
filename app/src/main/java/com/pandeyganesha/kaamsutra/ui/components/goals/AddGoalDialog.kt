@@ -29,7 +29,6 @@ import androidx.compose.ui.text.TextRange
 fun AddGoalDialog(
     goal: Goal? = null,
     existingGoalNames: Set<String>,
-    currentScreen: Screen,
     onDismiss: () -> Unit,
     onConfirm: (goal: Goal) -> Unit,
 ) {
@@ -48,13 +47,13 @@ fun AddGoalDialog(
     var pickedDate by remember { mutableStateOf(goal?.dueDate) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add ${currentScreen.singular}")},
+        title = { Text("Add ${Screen.GOALS.singular}")},
         text = {
             Column {
                 OutlinedTextField(
                     value = goalNameField,
                     onValueChange = { goalNameField = it },
-                    label = {Text("Enter ${currentScreen.singular}")},
+                    label = {Text("Enter ${Screen.GOALS.singular}")},
                     modifier = Modifier.focusRequester(focusRequester)
                 )
                 Spacer(modifier = Modifier.height(18.dp))
@@ -70,7 +69,7 @@ fun AddGoalDialog(
                 }
                 if (isDuplicate) {
                     Text(
-                        text = "${currentScreen.singular} already exists",
+                        text = "${Screen.GOALS.singular} already exists",
                         color = Color.Red
                     )
                 }
