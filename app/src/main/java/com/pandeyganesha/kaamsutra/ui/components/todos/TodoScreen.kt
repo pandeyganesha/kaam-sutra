@@ -48,11 +48,14 @@ import com.pandeyganesha.kaamsutra.ui.components.EmptyState
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 
 
 @Composable
 fun TodoScreen(
+    isActive: Boolean,
+    registerFabAction: (() -> Unit ) -> Unit,
     modifier: Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -68,7 +71,10 @@ fun TodoScreen(
     }
     val coroutineScope = rememberCoroutineScope()
     var showDialog by remember { mutableStateOf(false) }
-
+    LaunchedEffect(isActive) {
+        if(isActive)
+            registerFabAction({ showDialog = true})
+    }
     val existingTodos = activeTodos.map { it.name }.toSet()
 
     val all = remember { Tag(id = "ALL_TAG_ID", name = "All") }
@@ -122,42 +128,72 @@ fun TodoScreen(
         EmptyState(pageName = Screen.TODO, onClick = { showDialog = true })
     }
     else {
-        Box(modifier = modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                val chipsScrollState = rememberScrollState()
-                Row(
+        Column(modifier = Modifier.fillMaxSize()) {
+            val chipsScrollState = rememberScrollState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 14.dp, end = 14.dp, top = 14.dp)
+                    .nestedScroll(object : NestedScrollConnection {
+                        override fun onPostScroll(
+                            consumed: Offset,
+                            available: Offset,
+                            source: NestedScrollSource
+                        ): Offset = available
+                    })
+                    .horizontalScroll(chipsScrollState),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                tagsWithAll.forEach { tag ->
+                    FilterChip(
+                        selected = selected == tag,
+                        onClick = { selected = tag },
+                        label = { Text(tag.name) }
+                    )
+                }
+                IconButton(
+                    onClick = { showTagInputField = true },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 14.dp, end = 14.dp, top = 14.dp)
-                        .nestedScroll(object : NestedScrollConnection {
-                            override fun onPostScroll(
-                                consumed: Offset,
-                                available: Offset,
-                                source: NestedScrollSource
-                            ): Offset = available
-                        })
-                        .horizontalScroll(chipsScrollState),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .size(32.dp)
+                        .align(Alignment.CenterVertically)
                 ) {
-                    tagsWithAll.forEach { tag ->
-                        FilterChip(
-                            selected = selected == tag,
-                            onClick = { selected = tag },
-                            label = { Text(tag.name) }
+                    Icon(Icons.Default.Add, contentDescription = "Add tag")
+                }
+            }
+            LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+                items(todosNotDone, key = { it.id }) { todo ->
+                    ReorderableItem(reorderableState, key = todo.id) { isDragging ->
+                        TodoRow(
+                            todo = todo,
+                            todoTags = todoTagsMap[todo.id] ?: emptyList(),
+                            showTags = selected == all,
+                            isChecked = todo.completed,
+                            onCheckedChange = { checked -> onCheckedChange(checked, todo) },
+                            onEditClick = { onEditClicked(todo) },
+                            onDeleteClick = { onDeleteClicked(todo) },
+                            modifier = Modifier.longPressDraggableHandle(
+                                onDragStopped = {
+                                    val size = todosNotDone.size
+                                    val reordered = todosNotDone.mapIndexed { index, t ->
+                                        t.copy(sortOrder = size - 1 - index)
+                                    }
+                                    todosNotDone = reordered
+                                    onSortOrderUpdate(reordered)
+                                }
+                            )
                         )
                     }
-                    IconButton(
-                        onClick = { showTagInputField = true },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .align(Alignment.CenterVertically)
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add tag")
-                    }
                 }
-                LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
-                    items(todosNotDone, key = { it.id }) { todo ->
-                        ReorderableItem(reorderableState, key = todo.id) { isDragging ->
+                if (todosDone.isNotEmpty()) {
+                    item {
+                        CollapsibleSectionHeader(
+                            title = "Done",
+                            expanded = doneExpanded,
+                            onToggle = { doneExpanded = !doneExpanded }
+                        )
+                    }
+                    if (doneExpanded) {
+                        items(todosDone, key = { it.id }) { todo ->
                             TodoRow(
                                 todo = todo,
                                 todoTags = todoTagsMap[todo.id] ?: emptyList(),
@@ -165,67 +201,27 @@ fun TodoScreen(
                                 isChecked = todo.completed,
                                 onCheckedChange = { checked -> onCheckedChange(checked, todo) },
                                 onEditClick = { onEditClicked(todo) },
-                                onDeleteClick = { onDeleteClicked(todo) },
-                                modifier = Modifier.longPressDraggableHandle(
-                                    onDragStopped = {
-                                        val size = todosNotDone.size
-                                        val reordered = todosNotDone.mapIndexed { index, t ->
-                                            t.copy(sortOrder = size - 1 - index)
-                                        }
-                                        todosNotDone = reordered
-                                        onSortOrderUpdate(reordered)
-                                    }
-                                )
+                                onDeleteClick = { onDeleteClicked(todo) }
                             )
                         }
                     }
-                    if (todosDone.isNotEmpty()) {
-                        item {
-                            CollapsibleSectionHeader(
-                                title = "Done",
-                                expanded = doneExpanded,
-                                onToggle = { doneExpanded = !doneExpanded }
-                            )
-                        }
-                        if (doneExpanded) {
-                            items(todosDone, key = { it.id }) { todo ->
-                                TodoRow(
-                                    todo = todo,
-                                    todoTags = todoTagsMap[todo.id] ?: emptyList(),
-                                    showTags = selected == all,
-                                    isChecked = todo.completed,
-                                    onCheckedChange = { checked -> onCheckedChange(checked, todo) },
-                                    onEditClick = { onEditClicked(todo) },
-                                    onDeleteClick = { onDeleteClicked(todo) }
-                                )
-                            }
-                        }
-                        item {
-                            Spacer(modifier = Modifier.height(75.dp))
-                        }
+                    item {
+                        Spacer(modifier = Modifier.height(75.dp))
                     }
-                }
-                if (showTagInputField) {
-                    EditTagDialog(
-                        tags = tags,
-                        onDismiss = { showTagInputField = false },
-                        onConfirm = { createdTags, deletedTags ->
-                            coroutineScope.launch {
-                                createdTags.forEach { tagDao.createTag(it) }
-                                deletedTags.forEach { tagDao.deleteTag(it) }
-                            }
-                            showTagInputField = false
-                        }
-                    )
                 }
             }
-            FloatingActionButton(
-                onClick = { showDialog = true },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add todo")
+            if (showTagInputField) {
+                EditTagDialog(
+                    tags = tags,
+                    onDismiss = { showTagInputField = false },
+                    onConfirm = { createdTags, deletedTags ->
+                        coroutineScope.launch {
+                            createdTags.forEach { tagDao.createTag(it) }
+                            deletedTags.forEach { tagDao.deleteTag(it) }
+                        }
+                        showTagInputField = false
+                    }
+                )
             }
         }
     }

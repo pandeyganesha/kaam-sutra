@@ -32,11 +32,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 
 
 @Composable
 fun GoalScreen(
+    isActive: Boolean,
+    registerFabAction: (() -> Unit ) -> Unit,
     modifier: Modifier
 ) {
     val db = (LocalContext.current.applicationContext as MyApp).db
@@ -48,6 +51,10 @@ fun GoalScreen(
     var goalBeingDeleted by remember { mutableStateOf<Goal?>(null) }
     val existingGoals = activeGoals.map { it.name }.toSet()
     var showDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(isActive) {
+        if(isActive)
+            registerFabAction({ showDialog = true})
+    }
     val lazyListState = rememberLazyListState()
     var goalsNotDone by remember(activeGoals) {
         mutableStateOf(activeGoals.filter { !it.completed })
@@ -79,61 +86,51 @@ fun GoalScreen(
 
     }
     else {
-        Box(modifier=modifier.fillMaxSize()) {
-            LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
-                items(goalsNotDone, key = { it.id }) { goal ->
-                    ReorderableItem(reorderableState, key = goal.id) { isDragging ->
+        LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
+            items(goalsNotDone, key = { it.id }) { goal ->
+                ReorderableItem(reorderableState, key = goal.id) { isDragging ->
 
+                    GoalRow(
+                        goal = goal,
+                        isChecked = goal.completed,
+                        onCheckedChange = { checked -> onCheckedChange(checked, goal) },
+                        onEditClick = { onEditClicked(goal) },
+                        onDeleteClick = { onDeleteClicked(goal) },
+                        modifier = Modifier.longPressDraggableHandle(
+                            onDragStopped = {
+                                val size = goalsNotDone.size
+                                val reordered = goalsNotDone.mapIndexed { index, t ->
+                                    t.copy(sortOrder = size - 1 - index)
+                                }
+                                goalsNotDone = reordered
+                                onSortOrderUpdate(reordered)
+                            }
+                        )
+                    )
+                }
+            }
+            if (goalsDone.isNotEmpty()) {
+                item {
+                    CollapsibleSectionHeader(
+                        title = "Done",
+                        expanded = doneExpanded,
+                        onToggle = { doneExpanded = !doneExpanded }
+                    )
+                }
+                if (doneExpanded) {
+                    items(goalsDone, key = { it.id }) { goal ->
                         GoalRow(
                             goal = goal,
                             isChecked = goal.completed,
                             onCheckedChange = { checked -> onCheckedChange(checked, goal) },
                             onEditClick = { onEditClicked(goal) },
-                            onDeleteClick = { onDeleteClicked(goal) },
-                            modifier = Modifier.longPressDraggableHandle(
-                                onDragStopped = {
-                                    val size = goalsNotDone.size
-                                    val reordered = goalsNotDone.mapIndexed { index, t ->
-                                        t.copy(sortOrder = size - 1 - index)
-                                    }
-                                    goalsNotDone = reordered
-                                    onSortOrderUpdate(reordered)
-                                }
-                            )
+                            onDeleteClick = { onDeleteClicked(goal) }
                         )
                     }
                 }
-                if (goalsDone.isNotEmpty()) {
-                    item {
-                        CollapsibleSectionHeader(
-                            title = "Done",
-                            expanded = doneExpanded,
-                            onToggle = { doneExpanded = !doneExpanded }
-                        )
-                    }
-                    if (doneExpanded) {
-                        items(goalsDone, key = { it.id }) { goal ->
-                            GoalRow(
-                                goal = goal,
-                                isChecked = goal.completed,
-                                onCheckedChange = { checked -> onCheckedChange(checked, goal) },
-                                onEditClick = { onEditClicked(goal) },
-                                onDeleteClick = { onDeleteClicked(goal) }
-                            )
-                        }
-                    }
-                    item {
-                        Spacer(modifier = Modifier.height(75.dp))
-                    }
+                item {
+                    Spacer(modifier = Modifier.height(75.dp))
                 }
-            }
-            FloatingActionButton(
-                onClick = { showDialog = true },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add todo")
             }
         }
     }

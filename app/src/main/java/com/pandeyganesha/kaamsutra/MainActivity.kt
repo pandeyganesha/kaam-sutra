@@ -21,6 +21,14 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.pandeyganesha.kaamsutra.data.scheduleTestNotification
 import com.pandeyganesha.kaamsutra.data.scheduleMissedHabitSettlement
 import com.pandeyganesha.kaamsutra.ui.components.AppTopBar
@@ -83,8 +91,14 @@ fun KaamSutraApp(screenToOpen: Screen) {
         pageCount = { Screen.entries.size}
     )
     val currentScreen = Screen.entries[pagerState.currentPage]
+    var fabAction by remember { mutableStateOf({}) }
 
     Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(onClick = { fabAction() }) {
+                Icon(Icons.Default.Add, contentDescription = "Add")
+            }
+        },
         topBar = {
             AppTopBar(
                 title = currentScreen.plural,
@@ -98,11 +112,18 @@ fun KaamSutraApp(screenToOpen: Screen) {
                 .fillMaxSize()
         ) { page ->
             when (Screen.entries[page]) {
-                Screen.HABITS ->
-                    HabitScreen(modifier = Modifier.padding(innerPadding))
-
-                Screen.GOALS -> GoalScreen(modifier = Modifier.padding(innerPadding))
-                Screen.TODO -> TodoScreen(modifier = Modifier.padding(innerPadding))
+                Screen.HABITS -> HabitScreen(
+                    isActive = page == pagerState.currentPage,
+                    registerFabAction = { fabAction = it },
+                    modifier = Modifier.padding(innerPadding))
+                Screen.GOALS -> GoalScreen(
+                    isActive = page == pagerState.currentPage,
+                    registerFabAction = { fabAction = it },
+                    modifier = Modifier.padding(innerPadding))
+                Screen.TODO -> TodoScreen(
+                    isActive = page == pagerState.currentPage,
+                    registerFabAction = { fabAction = it },
+                    modifier = Modifier.padding(innerPadding))
             }
         }
     }

@@ -46,6 +46,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 
 
@@ -58,7 +59,10 @@ enum class RepeatTypeChip(val displayName: String) {
 }
 
 @Composable
-fun HabitScreen(modifier: Modifier) {
+fun HabitScreen(
+    isActive: Boolean,
+    registerFabAction: (() -> Unit ) -> Unit,
+    modifier: Modifier) {
     val db = (LocalContext.current.applicationContext as MyApp).db
     val scope = rememberCoroutineScope()
     val coroutineScope = rememberCoroutineScope()
@@ -83,6 +87,10 @@ fun HabitScreen(modifier: Modifier) {
     var habitBeingEdited by remember { mutableStateOf<Habit?>(null) }
     var habitBeingDeleted by remember { mutableStateOf<Habit?>(null) }
     var showDialog by remember { mutableStateOf(false) }
+    LaunchedEffect(isActive) {
+        if(isActive)
+            registerFabAction({ showDialog = true})
+    }
     val existingHabits =  activeHabits.map { it.name }.toSet()
     val lazyListState = rememberLazyListState()
     val filteredHabitsForRepeatType = filterHabitsByRepeatType(activeHabits, selected)
@@ -118,71 +126,62 @@ fun HabitScreen(modifier: Modifier) {
         EmptyState(pageName = Screen.TODO, onClick = { showDialog = true })
     }
     else {
-        Box(modifier=modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                val chipsScrollState = rememberScrollState()
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 14.dp, end = 14.dp, top = 14.dp)
-                        .nestedScroll(object : NestedScrollConnection {
-                            override fun onPostScroll(
-                                consumed: Offset,
-                                available: Offset,
-                                source: NestedScrollSource
-                            ): Offset = available
-                        })
-                        .horizontalScroll(chipsScrollState),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    RepeatTypeChip.entries.forEach { repeatTypeChip ->
-                        FilterChip(
-                            selected = selected == repeatTypeChip,
-                            onClick = { selected = repeatTypeChip },
-                            label = { Text(repeatTypeChip.displayName) }
+        Column(modifier = modifier.fillMaxSize()) {
+            val chipsScrollState = rememberScrollState()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 14.dp, end = 14.dp, top = 14.dp)
+                    .nestedScroll(object : NestedScrollConnection {
+                        override fun onPostScroll(
+                            consumed: Offset,
+                            available: Offset,
+                            source: NestedScrollSource
+                        ): Offset = available
+                    })
+                    .horizontalScroll(chipsScrollState),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                RepeatTypeChip.entries.forEach { repeatTypeChip ->
+                    FilterChip(
+                        selected = selected == repeatTypeChip,
+                        onClick = { selected = repeatTypeChip },
+                        label = { Text(repeatTypeChip.displayName) }
+                    )
+                }
+            }
+            LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
+                items(habitsWithLogs, key = { it.id }) { habit ->
+                    ReorderableItem(reorderableState, key = habit.id) { isDragging ->
+                        HabitRow(
+                            habit = habit,
+                            showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
+                            isChecked = allHabitLogsForCurrentPeriods.any {
+                                it.habitId == habit.id && it.completed &&
+                                        it.habitDate == periodStartDateFor(
+                                    habit,
+                                    LocalDate.now()
+                                ).toString()
+                            },
+                            onCheckedChange = { checked -> onCheckedChange(checked, habit) },
+                            onEditClick = { onEditClicked(habit) },
+                            onDeleteClick = { onDeleteClicked(habit) },
+                            modifier = Modifier.longPressDraggableHandle(
+                                onDragStopped = {
+                                    val size = habitsWithLogs.size
+                                    val reordered = habitsWithLogs.mapIndexed { index, h ->
+                                        h.copy(sortOrder = size - 1 - index)
+                                    }
+                                    habitsWithLogs = reordered
+                                    onSortOrderUpdate(reordered)
+                                }
+                            )
                         )
                     }
                 }
-                LazyColumn(state = lazyListState, modifier = Modifier.fillMaxSize()) {
-                    items(habitsWithLogs, key = { it.id }) { habit ->
-                        ReorderableItem(reorderableState, key = habit.id) { isDragging ->
-                            HabitRow(
-                                habit = habit,
-                                showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
-                                isChecked = allHabitLogsForCurrentPeriods.any {
-                                    it.habitId == habit.id && it.completed &&
-                                            it.habitDate == periodStartDateFor(
-                                        habit,
-                                        LocalDate.now()
-                                    ).toString()
-                                },
-                                onCheckedChange = { checked -> onCheckedChange(checked, habit) },
-                                onEditClick = { onEditClicked(habit) },
-                                onDeleteClick = { onDeleteClicked(habit) },
-                                modifier = Modifier.longPressDraggableHandle(
-                                    onDragStopped = {
-                                        val size = habitsWithLogs.size
-                                        val reordered = habitsWithLogs.mapIndexed { index, h ->
-                                            h.copy(sortOrder = size - 1 - index)
-                                        }
-                                        habitsWithLogs = reordered
-                                        onSortOrderUpdate(reordered)
-                                    }
-                                )
-                            )
-                        }
-                    }
-                }
-            }
-            FloatingActionButton(
-                onClick = { showDialog = true },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add todo")
             }
         }
+
     }
     habitBeingDeleted?.let { habit ->
         DeleteTaskDialog(
