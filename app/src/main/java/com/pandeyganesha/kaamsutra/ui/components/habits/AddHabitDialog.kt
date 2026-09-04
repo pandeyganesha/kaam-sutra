@@ -1,7 +1,6 @@
 package com.pandeyganesha.kaamsutra.ui.components.habits
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -14,18 +13,16 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import com.pandeyganesha.kaamsutra.Screen
 import com.pandeyganesha.kaamsutra.data.Habit
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.TextRange
+import com.pandeyganesha.kaamsutra.ui.components.utils.TaskInputField
 
 enum class RepeatType(val displayName: String) {
     DAILY("Daily"),
@@ -44,17 +41,9 @@ fun AddHabitDialog(
 ) {
     val existingHabitNamesExcludingItself = existingHabitNames - habit?.name
     var repeatDays by remember { mutableStateOf(habit?.repeatDays?.toString() ?: "") }
-    var habitNameField by remember {
-        mutableStateOf(
-            TextFieldValue(
-                text = habit?.name ?: "",
-                selection = TextRange(habit?.name?.length ?: 0)
-            )
-        )
-    }
-    val isDuplicate = habitNameField.text in existingHabitNamesExcludingItself
+    var habitNameField by remember { mutableStateOf(habit?.name ?: "") }
+    val isDuplicate = habitNameField in existingHabitNamesExcludingItself
     val nameRequester = remember { FocusRequester() }
-    val keyboard = LocalSoftwareKeyboardController.current
     var selected by remember {
         mutableStateOf(habit?.repeatType ?: RepeatType.DAILY)
     }
@@ -64,27 +53,27 @@ fun AddHabitDialog(
         title = { Text("Add ${currentScreen.singular}")},
         text = {
             Column {
-                OutlinedTextField(
-                    value = habitNameField,
-                    onValueChange = { habitNameField = it },
-                    label = {Text("Enter ${currentScreen.singular}")},
-                    modifier = Modifier.focusRequester(nameRequester)
+                TaskInputField(
+                    text = habitNameField,
+                    onTextChange = { habitNameField = it },
+                    focusRequester = nameRequester,
                 )
-                LaunchedEffect(Unit) {
-                    nameRequester.requestFocus()
-                    keyboard?.show()
-                }
                 if (isDuplicate) {
                     Text(
                         text = "${currentScreen.singular} already exists",
                         color = Color.Red
                     )
                 }
-                Text("Repeat", Modifier.padding(top = 15.dp, bottom = 7.dp))
+                Text(
+                    text = "Repeat",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(vertical = 10.dp)
+                )
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
                     RepeatType.entries.forEach { repeatType ->
                         FilterChip(
                             selected = selected == repeatType,
@@ -93,7 +82,8 @@ fun AddHabitDialog(
                             },
                             label = {
                                 Text(repeatType.displayName)
-                            }
+                            },
+                            modifier = Modifier.height(32.dp)
                         )
                     }
                 }
@@ -104,17 +94,17 @@ fun AddHabitDialog(
             TextButton(onClick = {
                 onConfirm(
                     habit?.copy(
-                        name = habitNameField.text,
+                        name = habitNameField,
                         repeatType = selected,
                         repeatDays = repeatDays.toIntOrNull()
                     ) ?: Habit(
-                        name = habitNameField.text,
+                        name = habitNameField,
                         repeatType = selected,
                         repeatDays = repeatDays.toIntOrNull()
                     )
                 )
             },
-                enabled = !isDuplicate && habitNameField.text.isNotBlank()
+                enabled = !isDuplicate && habitNameField.substringBefore('\n').isNotBlank()
             ) {
                 Text("Confirm")
             }

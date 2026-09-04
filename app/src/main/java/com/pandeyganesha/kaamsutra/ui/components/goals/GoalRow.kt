@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import com.pandeyganesha.kaamsutra.data.Goal
 import androidx.compose.ui.graphics.Color
@@ -53,13 +54,16 @@ fun GoalRow(
                 .padding(horizontal = 8.dp)
         ) {
             Text(
-                text = goal.name.trim(),
+                text = goal.name.substringBefore('\n').trim(),
                 textDecoration = if (isChecked) {
                     TextDecoration.LineThrough
                 }
                 else {
                     TextDecoration.None
-                } )
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
             Text(
                 text = goal.dueDate?.let {
