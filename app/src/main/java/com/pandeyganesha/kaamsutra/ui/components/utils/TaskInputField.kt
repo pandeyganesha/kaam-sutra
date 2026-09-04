@@ -25,10 +25,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
-private val InitialHeight = 56.dp          // before Enter — plain single-line field feel
-private val ExpandedDefaultHeight = 120.dp // once a description exists
-private val MaxHeight = 220.dp             // cap, then it scrolls
+private val InitialHeight = 56.dp
+private val ExpandedDefaultHeight = 120.dp
+private val MaxHeight = 220.dp
 private val FieldPadding = 12.dp
 
 @Composable
@@ -43,6 +47,14 @@ fun TaskInputField(
     val body = if (hasBody) text.substringAfter('\n') else ""
 
     val bodyFocusRequester = remember { FocusRequester() }
+    var requestBodyFocus by remember { mutableStateOf(false) }
+
+    LaunchedEffect(requestBodyFocus) {
+        if (requestBodyFocus) {
+            bodyFocusRequester.requestFocus()
+            requestBodyFocus = false
+        }
+    }
     val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
     val borderColor = MaterialTheme.colorScheme.outline
@@ -67,7 +79,7 @@ fun TaskInputField(
                     },
                     onEnter = {
                         if (!hasBody) onTextChange("$title\n$body") // establishes the body, empty for now
-                        bodyFocusRequester.requestFocus()
+                        requestBodyFocus = true
                     },
                     focusRequester = focusRequester,
                     placeholderColor = placeholderColor,
