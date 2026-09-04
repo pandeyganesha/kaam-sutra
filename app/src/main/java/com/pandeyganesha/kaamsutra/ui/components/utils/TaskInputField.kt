@@ -5,35 +5,31 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 
-private val InitialHeight = 56.dp
-private val ExpandedDefaultHeight = 120.dp
-private val MaxHeight = 220.dp
+private val InitialHeight = 56.dp          // before Enter — plain single-line field feel
+private val ExpandedDefaultHeight = 120.dp // once a description exists
+private val MaxHeight = 220.dp             // cap, then it scrolls
+private val FieldPadding = 12.dp
 
 @Composable
 fun TaskInputField(
@@ -42,26 +38,14 @@ fun TaskInputField(
     onTextChange: (String) -> Unit,
     focusRequester: FocusRequester? = null,
 ) {
-    var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-
     val hasBody = text.contains('\n')
-    val titleEmpty = text.substringBefore('\n').isEmpty()
-    val descriptionEmpty = !hasBody || text.substringAfter('\n').isEmpty()
+    val title = text.substringBefore('\n')
+    val body = if (hasBody) text.substringAfter('\n') else ""
 
-    // Index right where the title ends (the '\n', or end-of-text if no body yet).
-    val titleEndIndex = text.indexOf('\n').let { if (it == -1) text.length else it }
-
-    // Bottom of the title's LAST visual line. A long title can wrap across two+ lines
-    // even with zero '\n' — line 0 alone is wrong for that case, which was the overlap bug.
-    val titleLastLineBottom = layoutResult?.let { result ->
-        val line = result.getLineForOffset(titleEndIndex.coerceIn(0, text.length))
-        result.getLineBottom(line)
-    }
-
+    val bodyFocusRequester = remember { FocusRequester() }
+    val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
     val borderColor = MaterialTheme.colorScheme.outline
-    val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val padding = 12.dp
 
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -74,47 +58,37 @@ fun TaskInputField(
                 )
                 .verticalScroll(rememberScrollState())
         ) {
-            BasicTextField(
-                value = text,
-                onValueChange = onTextChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(padding)
-                    .then(
-                        if (focusRequester != null) Modifier.focusRequester(focusRequester)
-                        else Modifier
-                    )
-                    .drawBehind {
-                        if (!hasBody) return@drawBehind
-                        val y = titleLastLineBottom ?: return@drawBehind
-                        drawLine(
-                            color = dividerColor,
-                            start = Offset(0f, y),
-                            end = Offset(size.width, y),
-                            strokeWidth = 1.dp.toPx()
-                        )
+            Column(modifier = Modifier.fillMaxWidth()) {
+                TitleField(
+                    value = title,
+                    onValueChange = { newTitle ->
+                        val sanitized = newTitle.replace("\n", "") // title never holds a real newline
+                        onTextChange(if (hasBody) "$sanitized\n$body" else sanitized)
                     },
-                textStyle = LocalTextStyle.current.copy(color = LocalContentColor.current),
-                cursorBrush = SolidColor(LocalContentColor.current),
-                onTextLayout = { layoutResult = it },
-            )
-
-            if (titleEmpty) {
-                Text(text = "Title", color = placeholderColor, modifier = Modifier.padding(padding))
-            }
-            if (!titleEmpty && descriptionEmpty && hasBody) {
-                val y = titleLastLineBottom ?: 0f
-                Text(
-                    text = "Description (optional)",
-                    color = placeholderColor,
-                    modifier = Modifier
-                        .padding(padding)
-                        .offset { IntOffset(x = 0, y = y.roundToInt()) }
+                    onEnter = {
+                        if (!hasBody) onTextChange("$title\n$body") // establishes the body, empty for now
+                        bodyFocusRequester.requestFocus()
+                    },
+                    focusRequester = focusRequester,
+                    placeholderColor = placeholderColor,
                 )
+
+                if (hasBody) {
+                    HorizontalDivider(
+                        color = dividerColor,
+                        modifier = Modifier.padding(horizontal = FieldPadding, vertical = 6.dp)
+                    )
+                    BodyField(
+                        value = body,
+                        onValueChange = { newBody -> onTextChange("$title\n$newBody") },
+                        focusRequester = bodyFocusRequester,
+                        placeholderColor = placeholderColor,
+                    )
+                }
             }
         }
 
-        if (!hasBody && !titleEmpty) {
+        if (!hasBody && title.isNotEmpty()) {
             Text(
                 text = "Press enter to enter description as well",
                 style = MaterialTheme.typography.bodySmall,
@@ -123,4 +97,58 @@ fun TaskInputField(
             )
         }
     }
+}
+
+@Composable
+private fun TitleField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onEnter: () -> Unit,
+    focusRequester: FocusRequester?,
+    placeholderColor: Color,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(FieldPadding)
+            .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
+        singleLine = true,
+        textStyle = MaterialTheme.typography.titleMedium.copy(color = LocalContentColor.current),
+        cursorBrush = SolidColor(LocalContentColor.current),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        keyboardActions = KeyboardActions(onNext = { onEnter() }),
+        decorationBox = { innerTextField ->
+            if (value.isEmpty()) {
+                Text(text = "Title", style = MaterialTheme.typography.titleMedium, color = placeholderColor)
+            }
+            innerTextField()
+        }
+    )
+}
+
+@Composable
+private fun BodyField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    focusRequester: FocusRequester,
+    placeholderColor: Color,
+) {
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = FieldPadding, vertical = 4.dp)
+            .focusRequester(focusRequester),
+        textStyle = MaterialTheme.typography.bodyMedium.copy(color = LocalContentColor.current),
+        cursorBrush = SolidColor(LocalContentColor.current),
+        decorationBox = { innerTextField ->
+            if (value.isEmpty()) {
+                Text(text = "Description (optional)", style = MaterialTheme.typography.bodyMedium, color = placeholderColor)
+            }
+            innerTextField()
+        }
+    )
 }
