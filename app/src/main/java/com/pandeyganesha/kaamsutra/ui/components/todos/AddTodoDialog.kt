@@ -1,7 +1,6 @@
 package com.pandeyganesha.kaamsutra.ui.components.todos
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -19,15 +18,13 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import com.pandeyganesha.kaamsutra.data.Todo
 import androidx.compose.ui.unit.dp
 import com.pandeyganesha.kaamsutra.Screen
 import com.pandeyganesha.kaamsutra.data.Tag
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.TextRange
+import com.pandeyganesha.kaamsutra.ui.components.utils.TaskInputField
 
 
 @Composable
@@ -40,15 +37,9 @@ fun AddTodoDialog(
     onConfirm: (todo: Todo, selectedTags: List<Tag>) -> Unit,
 ) {
 
-    var todoNameField by remember {
-        mutableStateOf(
-            TextFieldValue(
-                text = todo?.name ?: "",
-                selection = TextRange(todo?.name?.length ?: 0)
-            )
-        )
-    }
-    val isDuplicate = todoNameField.text in existingTodoNames - todo?.name
+    var todoNameField by remember { mutableStateOf(todo?.name ?: "") }
+
+    val isDuplicate = todoNameField in existingTodoNames - todo?.name
     val focusRequester = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
     var selectedTags by remember { mutableStateOf(todoTags) }
@@ -58,11 +49,10 @@ fun AddTodoDialog(
         title = { Text("Add ${Screen.TODO.singular}")},
         text = {
             Column {
-                OutlinedTextField(
-                    value = todoNameField,
-                    onValueChange = { todoNameField = it },
-                    label = { Text("Enter ${Screen.TODO.singular}") },
-                    modifier = Modifier.focusRequester(focusRequester)
+                TaskInputField(
+                    text = todoNameField,
+                    onTextChange = { todoNameField = it },
+                    focusRequester = focusRequester,
                 )
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
@@ -106,11 +96,11 @@ fun AddTodoDialog(
 
             TextButton(onClick = {
                 onConfirm(
-                    todo?.copy(name = todoNameField.text) ?: Todo(name = todoNameField.text),
+                    todo?.copy(name = todoNameField) ?: Todo(name = todoNameField),
                     selectedTags
                 )
             },
-                enabled = !isDuplicate && todoNameField.text.isNotBlank()
+                enabled = !isDuplicate && todoNameField.substringBefore('\n').isNotBlank()
             ) {
                 Text("Confirm")
             }
