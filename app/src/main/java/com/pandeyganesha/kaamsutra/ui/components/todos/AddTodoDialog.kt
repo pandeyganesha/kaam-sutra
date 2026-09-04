@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
@@ -54,10 +55,6 @@ fun AddTodoDialog(
                     onTextChange = { todoNameField = it },
                     focusRequester = focusRequester,
                 )
-                LaunchedEffect(Unit) {
-                    focusRequester.requestFocus()
-                    keyboard?.show()
-                }
                 if (tags.isNotEmpty()) {
                     Text(
                         text = "Tags",
@@ -66,8 +63,8 @@ fun AddTodoDialog(
                     )
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(3.dp),
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         tags.forEach { tag ->
                             InputChip(
@@ -78,7 +75,9 @@ fun AddTodoDialog(
                                     else
                                         selectedTags + tag
                                 },
-                                label = { Text(tag.name) }
+                                label = { Text(tag.name) },
+                                modifier = Modifier
+                                    .height(32.dp)
                             )
                         }
                     }

@@ -29,6 +29,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 
 private val InitialHeight = 56.dp
 private val ExpandedDefaultHeight = 120.dp
@@ -48,6 +51,12 @@ fun TaskInputField(
 
     val bodyFocusRequester = remember { FocusRequester() }
     var requestBodyFocus by remember { mutableStateOf(false) }
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        if (hasBody) bodyFocusRequester.requestFocus() else focusRequester?.requestFocus()
+        keyboard?.show()
+    }
 
     LaunchedEffect(requestBodyFocus) {
         if (requestBodyFocus) {
@@ -58,6 +67,11 @@ fun TaskInputField(
     val placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant
     val dividerColor = MaterialTheme.colorScheme.outlineVariant
     val borderColor = MaterialTheme.colorScheme.outline
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(text) {
+        scrollState.animateScrollTo(scrollState.maxValue)
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -68,7 +82,7 @@ fun TaskInputField(
                     min = if (hasBody) ExpandedDefaultHeight else InitialHeight,
                     max = MaxHeight,
                 )
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 TitleField(
@@ -119,9 +133,15 @@ private fun TitleField(
     focusRequester: FocusRequester?,
     placeholderColor: Color,
 ) {
+    var fieldValue by remember {
+        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
+    }
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = fieldValue,
+        onValueChange = { new ->
+            fieldValue = new
+            onValueChange(new.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(FieldPadding)
@@ -147,9 +167,15 @@ private fun BodyField(
     focusRequester: FocusRequester,
     placeholderColor: Color,
 ) {
+    var fieldValue by remember {
+        mutableStateOf(TextFieldValue(text = value, selection = TextRange(value.length)))
+    }
     BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
+        value = fieldValue,
+        onValueChange = { new ->
+            fieldValue = new
+            onValueChange(new.text)
+        },
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = FieldPadding, vertical = 4.dp)
