@@ -149,7 +149,7 @@ fun HabitScreen(
 
     habitBeingDeleted?.let { habit ->
         DeleteTaskDialog(
-            taskName = habit.name,
+            taskName = habit.name.substringBefore('\n'),
             onDismiss = { habitBeingDeleted = null },
             onConfirm = {
                 coroutineScope.launch {

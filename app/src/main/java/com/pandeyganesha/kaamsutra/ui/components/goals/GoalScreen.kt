@@ -107,7 +107,7 @@ fun GoalScreen(
 
     goalBeingDeleted?.let { goal ->
         DeleteTaskDialog(
-            taskName = goal.name,
+            taskName = goal.name.substringBefore('\n'),
             onDismiss = { goalBeingDeleted = null },
             onConfirm = {
                 coroutineScope.launch {

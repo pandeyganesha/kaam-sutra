@@ -174,7 +174,7 @@ fun TodoScreen(
     }
     todoBeingDeleted?.let { todo ->
         DeleteTaskDialog(
-            taskName = todo.name,
+            taskName = todo.name.substringBefore('\n'),
             onDismiss = { todoBeingDeleted = null },
             onConfirm = {
                 coroutineScope.launch {

@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import com.pandeyganesha.kaamsutra.data.Habit
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.sp
@@ -51,13 +52,16 @@ fun HabitRow(
                 .padding(horizontal = 8.dp)
         ) {
             Text(
-                text = habit.name.trim(),
+                text = habit.name.substringBefore('\n').trim(),
                 textDecoration = if (isChecked) {
                     TextDecoration.LineThrough
                 }
                 else {
                     TextDecoration.None
-            } )
+                },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
 
             if (showRepeatTypeOrDays) {
                 Text(
