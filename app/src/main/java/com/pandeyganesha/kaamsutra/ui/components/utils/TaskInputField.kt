@@ -116,7 +116,7 @@ fun TaskInputField(
 
         if (!hasBody && title.isNotEmpty()) {
             Text(
-                text = "Press enter to enter description as well",
+                text = "Press enter to add description",
                 style = MaterialTheme.typography.bodySmall,
                 color = placeholderColor,
                 modifier = Modifier.padding(top = 4.dp, start = 4.dp)
