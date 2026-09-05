@@ -25,9 +25,9 @@ import java.time.LocalDate
 import kotlin.math.floor
 import kotlin.math.max
 
-private val DAILY_PIXEL = 15.dp
+private val DAILY_PIXEL = 14.dp
 private val WEEKLY_PIXEL = 15.dp
-private val MONTHLY_PIXEL = 20.dp
+private val MONTHLY_PIXEL = 18.dp
 private val GRID_SPACING = 2.dp
 
 private fun periodsForDaily(today: LocalDate): List<LocalDate> {
@@ -101,6 +101,6 @@ fun HeatMapPixel(colorIt: Boolean, size: Dp = 10.dp) {
         Modifier
             .size(size)
             .clip(RoundedCornerShape(3.dp))
-            .background(if (colorIt) Color(0xFF4CAF50) else Color(0xFF3A3A3A))
+            .background(if (colorIt) Color(0xFF4CAF50) else Color(0xFFE3EEE1))
     )
 }

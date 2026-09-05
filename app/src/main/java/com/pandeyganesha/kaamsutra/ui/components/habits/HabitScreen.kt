@@ -257,6 +257,7 @@ private fun HabitList(
                     modifier = Modifier.longPressDraggableHandle(
                         onDragStopped = { onDragStopped() }
                     )
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
         }
