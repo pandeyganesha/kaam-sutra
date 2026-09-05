@@ -29,7 +29,6 @@ import com.pandeyganesha.kaamsutra.data.HabitLog
 fun HabitRow(
     habit: Habit,
     habitLogs: List<HabitLog>,
-    showRepeatTypeOrDays: Boolean,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onEditClick: () -> Unit,
@@ -71,14 +70,6 @@ fun HabitRow(
                 habitLogs = habitLogs,
                 modifier = modifier
             )
-
-            if (showRepeatTypeOrDays) {
-                Text(
-                    text = habit.repeatType.displayName,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
         }
         IconButton(onClick = onDeleteClick) {
             Icon(Icons.Default.Delete, contentDescription = "Delete")

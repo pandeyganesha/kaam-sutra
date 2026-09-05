@@ -12,25 +12,21 @@ import com.pandeyganesha.kaamsutra.data.HabitLog
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import java.time.DayOfWeek
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.unit.Dp
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import java.time.LocalDate
 import kotlin.math.floor
 import kotlin.math.max
 
-private val DAILY_PIXEL = 12.dp
-private val WEEKLY_PIXEL = 14.dp
-private val MONTHLY_PIXEL = 16.dp
+private val DAILY_PIXEL = 14.dp
+private val WEEKLY_PIXEL = 16.dp
+private val MONTHLY_PIXEL = 18.dp
 private val GRID_SPACING = 2.dp
 
 private fun periodsForDaily(today: LocalDate): List<LocalDate> {
@@ -51,7 +47,6 @@ private fun periodsForHeatMap(repeatType: RepeatType, today: LocalDate = LocalDa
             val thisMonth = today.withDayOfMonth(1)
             (0..11).map { thisMonth.minusMonths((11 - it).toLong()) }
         }
-        RepeatType.YEARLY -> emptyList()
     }
 
 @Composable
@@ -93,7 +88,6 @@ fun HeatMapBox(habit: Habit, habitLogs: List<HabitLog>, modifier: Modifier = Mod
         RepeatType.DAILY   -> HeatMapGrid(periods, completed, pixelSize = DAILY_PIXEL, modifier = modifier)
         RepeatType.WEEKLY  -> HeatMapGrid(periods, completed, pixelSize = WEEKLY_PIXEL, modifier = modifier)
         RepeatType.MONTHLY -> HeatMapGrid(periods, completed, pixelSize = MONTHLY_PIXEL, modifier = modifier)
-        RepeatType.YEARLY  -> Unit
     }
 }
 

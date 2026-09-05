@@ -48,8 +48,7 @@ enum class RepeatTypeChip(val displayName: String) {
     ALL("All"),
     DAILY("Daily"),
     WEEKLY("Weekly"),
-    MONTHLY("Monthly"),
-    YEARLY("Yearly"),
+    MONTHLY("Monthly")
 }
 
 @Composable
@@ -142,7 +141,6 @@ fun HabitScreen(
                 habits = habitsWithLogs,
                 logs = allHabitLogsForCurrentPeriods,
                 logsByHabit = logsByHabit,
-                selected = selected,
                 lazyListState = lazyListState,
                 reorderableState = reorderableState,
                 onCheckedChange = onCheckedChange,
@@ -232,7 +230,6 @@ private fun HabitList(
     habits: List<Habit>,
     logs: List<HabitLog>,
     logsByHabit: Map<String, List<HabitLog>>,
-    selected: RepeatTypeChip,
     lazyListState: LazyListState,
     reorderableState: ReorderableLazyListState,
     onCheckedChange: (Boolean, Habit) -> Unit,
@@ -246,7 +243,6 @@ private fun HabitList(
             ReorderableItem(reorderableState, key = habit.id) {
                 HabitRow(
                     habit = habit,
-                    showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
                     habitLogs = logsByHabit[habit.id] ?: emptyList(),
                     isChecked = logs.any {
                         it.habitId == habit.id && it.completed &&
