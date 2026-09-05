@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
@@ -69,9 +70,8 @@ fun GoalRow(
                 text = goal.dueDate?.let {
                     SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
                 } ?: "No due date",
-                fontSize = 14.sp,
-                fontStyle = FontStyle.Italic,
-                color = Color(0xFFB8B8B8)
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
         }

@@ -191,9 +191,9 @@ private fun GoalList(
                     )
                 }
             }
-            item {
-                Spacer(modifier = Modifier.height(75.dp))
-            }
+        }
+        item {
+            Spacer(modifier = Modifier.height(75.dp))
         }
     }
 }
