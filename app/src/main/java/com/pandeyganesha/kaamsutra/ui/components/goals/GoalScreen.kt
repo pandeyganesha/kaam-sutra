@@ -1,5 +1,6 @@
 package com.pandeyganesha.kaamsutra.ui.components.goals
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -7,6 +8,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -159,7 +161,12 @@ private fun GoalList(
     onDragStopped: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(state = lazyListState, modifier = modifier.fillMaxSize()) {
+    LazyColumn(
+        state = lazyListState,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)) {
         items(goalsNotDone, key = { it.id }) { goal ->
             ReorderableItem(reorderableState, key = goal.id) {
                 GoalListItem(
