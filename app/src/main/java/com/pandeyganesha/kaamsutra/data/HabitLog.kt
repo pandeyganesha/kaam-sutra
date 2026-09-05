@@ -57,4 +57,7 @@ interface HabitLogDao {
     @Query("SELECT * FROM habit_log WHERE habitDate IN (:dates)")
     fun getLogsForDates(dates: List<String>): Flow<List<HabitLog>>
 
+    @Query("SELECT * FROM habit_log WHERE habitDate >= :sinceDate")
+    fun getLogsSince(sinceDate: String): Flow<List<HabitLog>>
+
 }

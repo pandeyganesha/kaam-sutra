@@ -79,6 +79,12 @@ fun HabitScreen(
         .collectAsState(initial = emptyList())
     val existingHabits = activeHabits.map { it.name }.toSet()
 
+    val heatMapSince = remember(today) { today.minusDays(364).toString() }
+    val habitLogsForHeatMap by habitLogDao.getLogsSince(heatMapSince).collectAsState(initial = emptyList())
+    val logsByHabit = remember(habitLogsForHeatMap) {
+        habitLogsForHeatMap.groupBy { it.habitId }
+    }
+
     // UI state
     var showDialog by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf(RepeatTypeChip.ALL) }
@@ -135,6 +141,7 @@ fun HabitScreen(
             HabitList(
                 habits = habitsWithLogs,
                 logs = allHabitLogsForCurrentPeriods,
+                logsByHabit = logsByHabit,
                 selected = selected,
                 lazyListState = lazyListState,
                 reorderableState = reorderableState,
@@ -224,6 +231,7 @@ private fun RepeatTypeFilterRow(
 private fun HabitList(
     habits: List<Habit>,
     logs: List<HabitLog>,
+    logsByHabit: Map<String, List<HabitLog>>,
     selected: RepeatTypeChip,
     lazyListState: LazyListState,
     reorderableState: ReorderableLazyListState,
@@ -239,6 +247,7 @@ private fun HabitList(
                 HabitRow(
                     habit = habit,
                     showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
+                    habitLogs = logsByHabit[habit.id] ?: emptyList(),
                     isChecked = logs.any {
                         it.habitId == habit.id && it.completed &&
                                 it.habitDate == periodStartDateFor(

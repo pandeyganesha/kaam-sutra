@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import com.pandeyganesha.kaamsutra.data.Habit
@@ -21,11 +22,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import com.pandeyganesha.kaamsutra.data.HabitLog
 
 
 @Composable
 fun HabitRow(
     habit: Habit,
+    habitLogs: List<HabitLog>,
     showRepeatTypeOrDays: Boolean,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
@@ -63,12 +66,17 @@ fun HabitRow(
                 overflow = TextOverflow.Ellipsis
             )
 
+            HeatMapBox(
+                habit=habit,
+                habitLogs = habitLogs,
+                modifier = modifier
+            )
+
             if (showRepeatTypeOrDays) {
                 Text(
                     text = habit.repeatType.displayName,
-                    fontSize = 14.sp,
-                    fontStyle = FontStyle.Italic,
-                    color = Color(0xFFB8B8B8)
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
