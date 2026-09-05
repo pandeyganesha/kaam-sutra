@@ -16,25 +16,36 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
 import java.time.LocalDate
+import kotlin.math.floor
+import kotlin.math.max
+
+private val DAILY_PIXEL = 12.dp
+private val WEEKLY_PIXEL = 14.dp
+private val MONTHLY_PIXEL = 16.dp
+private val GRID_SPACING = 2.dp
+
+private fun periodsForDaily(today: LocalDate): List<LocalDate> {
+    val thisSunday = today.minusDays(today.dayOfWeek.value % 7L) // Sun=0 offset
+    val start = thisSunday.minusWeeks(12)
+    return (0..90).map { start.plusDays(it.toLong()) }
+}
 
 private fun periodsForHeatMap(repeatType: RepeatType, today: LocalDate = LocalDate.now()): List<LocalDate> =
     when (repeatType) {
-        RepeatType.DAILY -> {
-            val start = today.minusDays(364)
-            (0..364).map { start.plusDays(it.toLong()) }
-        }
+        RepeatType.DAILY -> periodsForDaily(today)
         RepeatType.WEEKLY -> {
             val thisMonday = today.with(DayOfWeek.MONDAY)
-            val start = thisMonday.minusWeeks(52)
-            generateSequence(start) { it.plusWeeks(1) }
-                .takeWhile { !it.isAfter(thisMonday) }
-                .toList()
+            val start = thisMonday.minusWeeks(51)
+            generateSequence(start) { it.plusWeeks(1) }.takeWhile { !it.isAfter(thisMonday) }.toList()
         }
         RepeatType.MONTHLY -> {
             val thisMonth = today.withDayOfMonth(1)
@@ -44,49 +55,28 @@ private fun periodsForHeatMap(repeatType: RepeatType, today: LocalDate = LocalDa
     }
 
 @Composable
-fun HeatMapBox(
-    habit: Habit,
-    habitLogs: List<HabitLog>,
-    modifier: Modifier = Modifier
-) {
-    val completedDates = remember(habitLogs) {
-        habitLogs.filter { it.completed }.map { it.habitDate }.toSet()
-    }
-    val periods = remember(habit.repeatType) { periodsForHeatMap(habit.repeatType) }
-
-    when (habit.repeatType) {
-        RepeatType.DAILY -> DailyHeatMapGrid(periods, completedDates, modifier)
-        RepeatType.WEEKLY -> LinearHeatMapRow(periods, completedDates, pixelSize = 12.dp, modifier = modifier)
-        RepeatType.MONTHLY -> LinearHeatMapRow(periods, completedDates, pixelSize = 18.dp, modifier = modifier)
-        RepeatType.YEARLY -> Unit
-    }
-}
-
-// GitHub-style: 7 rows (Sun..Sat), oldest column on the left, auto-scrolled to today
-@Composable
-private fun DailyHeatMapGrid(
+fun HeatMapGrid(
     periods: List<LocalDate>,
-    completedDates: Set<String>,
+    completed: Set<String>,
+    pixelSize: Dp,
+    spacing: Dp = GRID_SPACING,
     modifier: Modifier = Modifier
 ) {
-    val firstDate = periods.first()
-    val leadingPad = firstDate.dayOfWeek.value % 7 // days since the preceding Sunday
-    val cells: List<LocalDate?> = List(leadingPad) { null } + periods
-    val weeks = cells.chunked(7)
-    val scrollState = rememberScrollState()
-    LaunchedEffect(Unit) { scrollState.scrollTo(scrollState.maxValue) }
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+        val density = LocalDensity.current
+        val pixelPx = with(density) { pixelSize.toPx() }
+        val spacingPx = with(density) { spacing.toPx() }
+        val availablePx = constraints.maxWidth.toFloat()
 
-    Row(
-        modifier = modifier.horizontalScroll(scrollState),
-        horizontalArrangement = Arrangement.spacedBy(3.dp)
-    ) {
-        weeks.forEach { week ->
-            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                week.forEach { date ->
-                    if (date == null) {
-                        Spacer(modifier = Modifier.size(10.dp))
-                    } else {
-                        HeatMapPixel(colorIt = date.toString() in completedDates, size = 10.dp)
+        // how many pixels fit per row, given the fixed pixel size
+        val columns = max(1, floor((availablePx + spacingPx) / (pixelPx + spacingPx)).toInt())
+        val rows = periods.chunked(columns)
+
+        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
+            rows.forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(spacing)) {
+                    row.forEach { date ->
+                        HeatMapPixel(colorIt = date.toString() in completed, size = pixelSize)
                     }
                 }
             }
@@ -95,29 +85,22 @@ private fun DailyHeatMapGrid(
 }
 
 @Composable
-private fun LinearHeatMapRow(
-    periods: List<LocalDate>,
-    completedDates: Set<String>,
-    pixelSize: Dp,
-    modifier: Modifier = Modifier
-) {
-    val scrollState = rememberScrollState()
-    LaunchedEffect(Unit) { scrollState.scrollTo(scrollState.maxValue) }
+fun HeatMapBox(habit: Habit, habitLogs: List<HabitLog>, modifier: Modifier = Modifier) {
+    val completed = remember(habitLogs) { habitLogs.filter { it.completed }.map { it.habitDate }.toSet() }
+    val periods = remember(habit.repeatType) { periodsForHeatMap(habit.repeatType) }
 
-    Row(
-        modifier = modifier.horizontalScroll(scrollState),
-        horizontalArrangement = Arrangement.spacedBy(3.dp)
-    ) {
-        periods.forEach { date ->
-            HeatMapPixel(colorIt = date.toString() in completedDates, size = pixelSize)
-        }
+    when (habit.repeatType) {
+        RepeatType.DAILY   -> HeatMapGrid(periods, completed, pixelSize = DAILY_PIXEL, modifier = modifier)
+        RepeatType.WEEKLY  -> HeatMapGrid(periods, completed, pixelSize = WEEKLY_PIXEL, modifier = modifier)
+        RepeatType.MONTHLY -> HeatMapGrid(periods, completed, pixelSize = MONTHLY_PIXEL, modifier = modifier)
+        RepeatType.YEARLY  -> Unit
     }
 }
 
 @Composable
-fun HeatMapPixel(colorIt: Boolean, size: Dp = 14.dp, modifier: Modifier = Modifier) {
+fun HeatMapPixel(colorIt: Boolean, size: Dp = 10.dp) {
     Box(
-        modifier = modifier
+        Modifier
             .size(size)
             .clip(RoundedCornerShape(3.dp))
             .background(if (colorIt) Color(0xFF4CAF50) else Color(0xFF3A3A3A))
