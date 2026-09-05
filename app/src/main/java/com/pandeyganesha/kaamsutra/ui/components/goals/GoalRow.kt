@@ -1,13 +1,17 @@
 package com.pandeyganesha.kaamsutra.ui.components.goals
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.Alignment
@@ -36,14 +40,23 @@ fun GoalRow(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    val currentIsChecked by rememberUpdatedState(isChecked)
+    val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
+    val currentOnEditClick by rememberUpdatedState(onEditClick)
+
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(8.dp)
+            )
             .padding(8.dp)
-            .pointerInput(isChecked) {
+            .pointerInput(Unit) {
                 detectTapGestures(
-                    onDoubleTap = { onCheckedChange(!isChecked) },
-                    onTap = {onEditClick()}
+                    onDoubleTap = { currentOnCheckedChange(!currentIsChecked) },
+                    onTap = { currentOnEditClick() }
                 )
             },
         verticalAlignment = Alignment.CenterVertically

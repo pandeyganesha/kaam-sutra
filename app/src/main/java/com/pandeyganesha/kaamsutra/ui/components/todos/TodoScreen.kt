@@ -281,7 +281,13 @@ private fun TodoList(
     onDragStopped: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(state = lazyListState, modifier = modifier) {
+    LazyColumn(
+        state = lazyListState,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 8.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
         items(todosNotDone, key = { it.id }) { todo ->
             ReorderableItem(reorderableState, key = todo.id) {
                 TodoListItem(

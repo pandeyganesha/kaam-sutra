@@ -16,6 +16,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -37,6 +39,10 @@ fun HabitRow(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentIsChecked by rememberUpdatedState(isChecked)
+    val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
+    val currentOnEditClick by rememberUpdatedState(onEditClick)
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -52,10 +58,10 @@ fun HabitRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp)
-                .pointerInput(isChecked) {
+                .pointerInput(Unit) {
                     detectTapGestures(
-                        onDoubleTap = { onCheckedChange(!isChecked) },
-                        onTap = { onEditClick() }
+                        onDoubleTap = { currentOnCheckedChange(!currentIsChecked) },
+                        onTap = { currentOnEditClick() }
                     )
                 },
             horizontalArrangement = Arrangement.SpaceBetween,
