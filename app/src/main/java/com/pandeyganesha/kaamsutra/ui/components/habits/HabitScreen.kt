@@ -4,8 +4,10 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -48,8 +50,7 @@ enum class RepeatTypeChip(val displayName: String) {
     ALL("All"),
     DAILY("Daily"),
     WEEKLY("Weekly"),
-    MONTHLY("Monthly"),
-    YEARLY("Yearly"),
+    MONTHLY("Monthly")
 }
 
 @Composable
@@ -78,6 +79,12 @@ fun HabitScreen(
     val allHabitLogsForCurrentPeriods by habitLogDao.getLogsForDates(relevantPeriodDates)
         .collectAsState(initial = emptyList())
     val existingHabits = activeHabits.map { it.name }.toSet()
+
+    val heatMapSince = remember(today) { today.minusDays(364).toString() }
+    val habitLogsForHeatMap by habitLogDao.getLogsSince(heatMapSince).collectAsState(initial = emptyList())
+    val logsByHabit = remember(habitLogsForHeatMap) {
+        habitLogsForHeatMap.groupBy { it.habitId }
+    }
 
     // UI state
     var showDialog by remember { mutableStateOf(false) }
@@ -135,7 +142,7 @@ fun HabitScreen(
             HabitList(
                 habits = habitsWithLogs,
                 logs = allHabitLogsForCurrentPeriods,
-                selected = selected,
+                logsByHabit = logsByHabit,
                 lazyListState = lazyListState,
                 reorderableState = reorderableState,
                 onCheckedChange = onCheckedChange,
@@ -224,7 +231,7 @@ private fun RepeatTypeFilterRow(
 private fun HabitList(
     habits: List<Habit>,
     logs: List<HabitLog>,
-    selected: RepeatTypeChip,
+    logsByHabit: Map<String, List<HabitLog>>,
     lazyListState: LazyListState,
     reorderableState: ReorderableLazyListState,
     onCheckedChange: (Boolean, Habit) -> Unit,
@@ -238,7 +245,7 @@ private fun HabitList(
             ReorderableItem(reorderableState, key = habit.id) {
                 HabitRow(
                     habit = habit,
-                    showRepeatTypeOrDays = selected == RepeatTypeChip.ALL,
+                    habitLogs = logsByHabit[habit.id] ?: emptyList(),
                     isChecked = logs.any {
                         it.habitId == habit.id && it.completed &&
                                 it.habitDate == periodStartDateFor(
@@ -252,8 +259,12 @@ private fun HabitList(
                     modifier = Modifier.longPressDraggableHandle(
                         onDragStopped = { onDragStopped() }
                     )
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
+        }
+        item {
+            Spacer(modifier = Modifier.height(75.dp))
         }
     }
 }

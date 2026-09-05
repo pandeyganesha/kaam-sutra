@@ -50,15 +50,6 @@ class MissedHabitWorker(
             )
         }
 
-        // Settle yearly
-        if (today.month == Month.JANUARY && today.dayOfMonth == 1) {
-            settlePeriod(
-                habits = activeHabits.filter { it.repeatType == RepeatType.YEARLY },
-                periodDate = LocalDate.of(today.year - 1, 1, 1),
-                habitLogDao = habitLogDao
-            )
-        }
-
         return Result.success()
     }
 }

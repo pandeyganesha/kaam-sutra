@@ -27,8 +27,7 @@ import com.pandeyganesha.kaamsutra.ui.components.utils.TaskInputField
 enum class RepeatType(val displayName: String) {
     DAILY("Daily"),
     WEEKLY("Weekly"),
-    MONTHLY("Monthly"),
-    YEARLY("Yearly"),
+    MONTHLY("Monthly")
 }
 
 @Composable
