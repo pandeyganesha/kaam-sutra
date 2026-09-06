@@ -54,6 +54,7 @@ fun HabitRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
+                modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { onCheckedChange(!isChecked) }) {
@@ -67,6 +68,7 @@ fun HabitRow(
 
                 Text(
                     text = habit.name.substringBefore('\n').trim(),
+                    modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
