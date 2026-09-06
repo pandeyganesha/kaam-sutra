@@ -179,6 +179,10 @@ fun HabitScreen(
                     habitDao.updateHabit(habit.copy(name = habit.name.replaceFirstChar { it.uppercase() }))
                     habitBeingEdited = null
                 }
+            },
+            onDeleteClick = {
+                habitBeingEdited = null
+                habitBeingDeleted = habit
             }
         )
     }

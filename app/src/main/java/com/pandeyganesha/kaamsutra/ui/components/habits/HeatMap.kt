@@ -31,8 +31,7 @@ private val MONTHLY_PIXEL = 18.dp
 private val GRID_SPACING = 2.dp
 
 private fun periodsForDaily(today: LocalDate): List<LocalDate> {
-    val thisSunday = today.minusDays(today.dayOfWeek.value % 7L) // Sun=0 offset
-    val start = thisSunday.minusWeeks(12)
+    val start = today.minusDays(90)
     return (0..90).map { start.plusDays(it.toLong()) }
 }
 

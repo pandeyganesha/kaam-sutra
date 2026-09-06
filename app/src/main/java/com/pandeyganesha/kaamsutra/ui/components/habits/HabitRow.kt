@@ -1,31 +1,28 @@
 package com.pandeyganesha.kaamsutra.ui.components.habits
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pandeyganesha.kaamsutra.R
 import com.pandeyganesha.kaamsutra.data.Habit
 import com.pandeyganesha.kaamsutra.data.HabitLog
 
@@ -39,10 +36,6 @@ fun HabitRow(
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val currentIsChecked by rememberUpdatedState(isChecked)
-    val currentOnCheckedChange by rememberUpdatedState(onCheckedChange)
-    val currentOnEditClick by rememberUpdatedState(onEditClick)
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -56,26 +49,34 @@ fun HabitRow(
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onDoubleTap = { currentOnCheckedChange(!currentIsChecked) },
-                        onTap = { currentOnEditClick() }
-                    )
-                },
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = habit.name.substringBefore('\n').trim(),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            IconButton(onClick = onDeleteClick) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { onCheckedChange(!isChecked) }) {
+                    Icon(
+                        painter = painterResource(if (isChecked) R.drawable.done_tag else R.drawable.not_done_tag),
+                        contentDescription = if (isChecked) "Mark as not done" else "Mark as done",
+                        tint = if (isChecked) Color.Unspecified else MaterialTheme.colorScheme.outline,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
+                Text(
+                    text = habit.name.substringBefore('\n').trim(),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            IconButton(onClick = onEditClick) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit")
             }
         }
         HeatMapBox(
