@@ -306,7 +306,7 @@ private fun TodoList(
         if (todosDone.isNotEmpty()) {
             item {
                 CollapsibleSectionHeader(
-                    title = "Done",
+                    title = "Done (${todosDone.size})",
                     expanded = doneExpanded,
                     onToggle = onDoneToggle
                 )

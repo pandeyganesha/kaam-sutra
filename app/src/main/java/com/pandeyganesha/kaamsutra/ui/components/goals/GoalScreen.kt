@@ -183,7 +183,7 @@ private fun GoalList(
         if (goalsDone.isNotEmpty()) {
             item {
                 CollapsibleSectionHeader(
-                    title = "Done",
+                    title = "Done (${goalsDone.size}) ",
                     expanded = doneExpanded,
                     onToggle = onDoneToggle
                 )
