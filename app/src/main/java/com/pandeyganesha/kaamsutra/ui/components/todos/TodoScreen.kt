@@ -37,6 +37,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pandeyganesha.kaamsutra.MyApp
 import com.pandeyganesha.kaamsutra.Screen
 import com.pandeyganesha.kaamsutra.data.Status
@@ -63,6 +64,7 @@ fun TodoScreen(
     val tagDao = db.tagDao()
     val todoTagDao = db.todoTagDao()
     val coroutineScope = rememberCoroutineScope()
+    val viewModel: TodoViewModel = viewModel()
 
     // Data
     val activeTodos by todoDao.getTodos(Status.ACTIVE).collectAsState(initial = emptyList())
@@ -74,9 +76,9 @@ fun TodoScreen(
     val existingTodos = activeTodos.map { it.name }.toSet()
 
     // Tag filter + done/not-done split
-    val all = remember { Tag(id = "ALL_TAG_ID", name = "All") }
+    val all = remember { Tag(id = ALL_TAG_ID, name = "All") }
     val tagsWithAll = listOf(all) + tags
-    var selected by remember { mutableStateOf(all) }
+    val selected = tagsWithAll.find { it.id == viewModel.selectedTagId } ?: all
     val filteredTodos = remember(activeTodos, selected, todoTagsMap) {
         if (selected == all) activeTodos
         else activeTodos.filter { todo -> todoTagsMap[todo.id]?.contains(selected) == true }
@@ -138,7 +140,7 @@ fun TodoScreen(
             TodoFilterRow(
                 tags = tagsWithAll,
                 selected = selected,
-                onSelect = { selected = it },
+                onSelect = { viewModel.selectTag(it.id) },
                 onAddTagClick = { showTagInputField = true }
             )
             TodoList(
@@ -208,7 +210,7 @@ fun TodoScreen(
     if (showDialog) {
         AddTodoDialog(
             tags = tags,
-            todoTags = if (selected!= all) listOf(selected) else emptyList(),
+            todoTags = if (selected != all) listOf(selected) else emptyList(),
             existingTodoNames = existingTodos,
             onDismiss = { showDialog = false },
             onConfirm = { todo, selectedTags ->

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -62,8 +63,8 @@ fun EditTagDialog(
             )
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
                 editedTags.forEach { tag ->
                     InputChip(
@@ -87,7 +88,8 @@ fun EditTagDialog(
                                         }
                                     }
                             )
-                        }
+                        },
+                        modifier = Modifier.height(32.dp)
                     )
                 }
             }
@@ -113,7 +115,7 @@ fun EditTagDialog(
                         Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Add tag")
                     }
                 },
-                modifier = Modifier.focusRequester(focusRequester)
+                modifier = Modifier.focusRequester(focusRequester).padding(vertical = 18.dp)
             )
             LaunchedEffect(Unit) {
                 focusRequester.requestFocus()
