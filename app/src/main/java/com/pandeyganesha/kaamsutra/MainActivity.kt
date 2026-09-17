@@ -86,7 +86,7 @@ fun periodStartDateFor(habit: Habit, date: LocalDate): LocalDate {
 fun KaamSutraApp(screenToOpen: Screen) {
 
     val pagerState = rememberPagerState(
-        initialPage = Screen.HABITSS.ordinal,
+        initialPage = Screen.HABITS.ordinal,
         pageCount = { Screen.entries.size}
     )
     val currentScreen = Screen.entries[pagerState.currentPage]
